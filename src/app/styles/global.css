@@ -1,0 +1,87 @@
+:root {
+  --bg: #050506;
+  --text: #f7f7f9;
+  --text-muted: #9a9aa3;
+  --brand-hot: #ff4d57;
+  --brand-cold: #ff4d57;
+  --danger: #ff737b;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --container: 1160px;
+  --focus: rgba(255, 77, 87, 0.34);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Sora', 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.06), transparent 48%),
+    radial-gradient(circle at 50% 120%, rgba(255, 255, 255, 0.03), transparent 52%),
+    var(--bg);
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  width: min(100% - 2rem, var(--container));
+  margin: 0 auto;
+  padding: 1.4rem 0 3rem;
+  animation: page-enter 460ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.section-title {
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    width: min(100% - 1rem, var(--container));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+  }
+}

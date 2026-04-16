@@ -1,0 +1,138 @@
+.works-page {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.works-header {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0;
+  background: transparent;
+}
+
+.works-header h1 {
+  margin: 0;
+}
+
+.works-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: #82ffe5;
+  font-weight: 700;
+}
+
+.works-back-link {
+  width: fit-content;
+  margin-top: 0.2rem;
+  padding: 0.44rem 0.75rem;
+  border-radius: 999px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.works-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.75rem;
+  color: var(--text-muted);
+}
+
+.works-controls label {
+  font-weight: 700;
+}
+
+.works-controls select {
+  border-radius: 8px;
+  padding: 0.38rem 0.55rem;
+  font: inherit;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text);
+  border: none;
+}
+
+.works-list {
+  display: grid;
+  gap: 0.95rem;
+  background: transparent;
+}
+
+.state-block {
+  padding: 0.2rem 0;
+  color: var(--text-muted);
+}
+
+.state-error {
+  color: #ff9eb4;
+}
+
+.work-line {
+  padding: 0.78rem 0;
+  background: transparent;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: works-rise 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.work-line:nth-child(1) { animation-delay: 30ms; }
+.work-line:nth-child(2) { animation-delay: 70ms; }
+.work-line:nth-child(3) { animation-delay: 110ms; }
+.work-line:nth-child(4) { animation-delay: 150ms; }
+.work-line:nth-child(5) { animation-delay: 190ms; }
+.work-line:nth-child(6) { animation-delay: 230ms; }
+
+.work-line h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.work-line p {
+  margin: 0.5rem 0;
+  color: var(--text-muted);
+}
+
+.work-line-result {
+  color: var(--text) !important;
+  font-weight: 700;
+}
+
+.work-line a {
+  color: #9ad4ff;
+}
+
+.works-more-button {
+  border-radius: 999px;
+  padding: 0.62rem 0.95rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text);
+  border: none;
+  cursor: pointer;
+}
+
+.works-more-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+@keyframes works-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
