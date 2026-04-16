@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# Nick Development Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend-проект лендинга на `React + TypeScript + Vite` с упором на mobile-first UX, строгую типизацию и архитектуру в стиле FSD.
 
-Currently, two official plugins are available:
+## Технологический стек
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19 + TypeScript
+- Vite
+- React Router
+- TanStack Query
+- React Hook Form + Zod
+- Tailwind CSS
+- ESLint + Prettier
+- Vitest + Testing Library + Playwright
 
-## React Compiler
+## Требования
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js LTS (20+)
+- npm 10+
 
-## Expanding the ESLint configuration
+## Установка и запуск
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Установка зависимостей
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Запуск в dev-режиме
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+### Сборка
+
+```bash
+npm run build
+```
+
+### Проверка линтером
+
+```bash
+npm run lint
+```
+
+### Preview production сборки
+
+```bash
+npm run preview
+```
+
+## Доступные скрипты
+
+- `npm run dev` — локальная разработка
+- `npm run build` — сборка проекта
+- `npm run lint` — проверка качества кода
+- `npm run preview` — локальный preview production build
+
+## Архитектура
+
+Целевой подход: `Feature-Sliced Design (FSD)` с `pages-first` стартом:
+
+```text
+src/
+  app/
+  pages/
+  widgets/
+  features/
+  entities/
+  shared/
+```
+
+Подробно: [docs/02-architecture/fsd-architecture.md](./docs/02-architecture/fsd-architecture.md)
+
+## Нейминг и стандарты
+
+- Конвенции именования: [docs/04-standards/naming-conventions.md](./docs/04-standards/naming-conventions.md)
+- Индекс документации: [docs/README.md](./docs/README.md)
+
+## Локальные skills
+
+В проект локально установлены skills для архитектуры, UI/UX, безопасности, тестирования и best practices React.
+
+Список: [docs/05-tooling/skills.md](./docs/05-tooling/skills.md)
+
+## Статус документации
+
+- `docs/superpowers/plans/` используется как рабочий раздел с планами и черновиками.
+- Нормативные инженерные стандарты и гайды находятся в `docs/01-05`.
