@@ -1,0 +1,109 @@
+:root {
+  --bg: #000;
+  --text: #f7f7f9;
+  --text-muted: #9a9aa3;
+  --brand-hot: #7f96ff;
+  --brand-cold: #7f96ff;
+  --danger: #ff737b;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --container: 1160px;
+  --focus: rgba(127, 150, 255, 0.34);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Sora', 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+.app-shell-content {
+  position: relative;
+  z-index: 1;
+}
+
+.app-network-background {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.92;
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  width: min(100% - 2rem, var(--container));
+  margin: 0 auto;
+  padding: 1.4rem 0 3rem;
+  animation: page-enter 460ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card {
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.section-title {
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    width: min(100% - 1rem, var(--container));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-network-background {
+    display: none;
+  }
+
+  .page {
+    animation: none;
+  }
+}
