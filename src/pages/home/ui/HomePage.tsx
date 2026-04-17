@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useGSAP } from '@gsap/react'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { SplitText } from 'gsap/SplitText'
 import {
   useCreateLead,
   useEarningsTotal,
@@ -11,10 +15,14 @@ import {
 import { mockEarningsTotal } from '@/shared/config/content'
 import { routes } from '@/shared/config/routes'
 import { formatCurrency } from '@/shared/lib/format-currency'
+import { captureWorkCardTransition } from '@/shared/lib/work-card-transition'
 import { leadFormSchema, type LeadFormValues } from '../model/lead-form'
 import './HomePage.css'
 
+gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText)
+
 export function HomePage() {
+  const pageRef = useRef<HTMLElement | null>(null)
   const formRef = useRef<HTMLElement | null>(null)
   const animatedValueRef = useRef(0)
   const worksCarouselRef = useRef<HTMLDivElement | null>(null)
@@ -70,6 +78,133 @@ export function HomePage() {
 
     requestAnimationFrame(tick)
   }, [targetTotal])
+
+  useGSAP(
+    () => {
+      const reduceMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches
+
+      if (reduceMotion) {
+        return
+      }
+
+      const splitInstances: SplitText[] = []
+      const heroKicker = pageRef.current?.querySelector<HTMLElement>('.hero-kicker')
+
+      const heroTimeline = gsap.timeline({
+        defaults: {
+          duration: 0.8,
+          ease: 'power3.out',
+        },
+      })
+
+      if (heroKicker) {
+        const kickerSplit = SplitText.create(heroKicker, {
+          type: 'words,chars',
+          wordsClass: 'split-word',
+          charsClass: 'split-char',
+        })
+        splitInstances.push(kickerSplit)
+
+        heroTimeline.from(
+          kickerSplit.chars,
+          {
+            yPercent: 120,
+            autoAlpha: 0,
+            stagger: 0.012,
+            duration: 0.52,
+            ease: 'power2.out',
+          },
+          0,
+        )
+      }
+
+      heroTimeline
+        .from(
+          '.hero-total',
+          {
+            y: 40,
+            scale: 0.97,
+            autoAlpha: 0,
+            duration: 0.95,
+          },
+          0.05,
+        )
+        .from(
+          '.hero-note, .hero-live',
+          {
+            y: 14,
+            autoAlpha: 0,
+            duration: 0.62,
+            stagger: 0.08,
+          },
+          0.24,
+        )
+        .from(
+          '.hero-scroll',
+          {
+            y: 16,
+            autoAlpha: 0,
+            duration: 0.62,
+          },
+          0.28,
+        )
+
+      const sectionTitles = gsap.utils.toArray<HTMLElement>('.section-title')
+      sectionTitles.forEach((title) => {
+        const split = SplitText.create(title, {
+          type: 'lines,words',
+          linesClass: 'split-line',
+          wordsClass: 'split-word',
+        })
+        splitInstances.push(split)
+
+        gsap.from(split.words, {
+          yPercent: 108,
+          autoAlpha: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          stagger: 0.024,
+          scrollTrigger: {
+            trigger: title,
+            start: 'top 86%',
+            once: true,
+          },
+        })
+      })
+
+      const revealTargets = gsap.utils.toArray<HTMLElement>(
+        '.section-subtitle, .works-scroll, .tariffs-grid, .lead-form, .btn-inline',
+      )
+
+      revealTargets.forEach((element) => {
+        gsap.from(element, {
+          y: 26,
+          autoAlpha: 0,
+          duration: 0.72,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: element,
+            start: 'top 88%',
+            once: true,
+          },
+        })
+      })
+
+      return () => {
+        splitInstances.forEach((split) => split.revert())
+      }
+    },
+    {
+      scope: pageRef,
+      revertOnUpdate: true,
+      dependencies: [
+        worksQuery.data?.items.length ?? 0,
+        tariffsQuery.data?.items.length ?? 0,
+      ],
+    },
+  )
 
   useEffect(() => {
     const container = worksCarouselRef.current
@@ -153,6 +288,21 @@ export function HomePage() {
     }
   }
 
+  const handleWorkLinkClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    workId: string,
+  ) => {
+    const cardElement = event.currentTarget.closest<HTMLElement>(
+      '.work-card, .work-line',
+    )
+
+    if (!cardElement) {
+      return
+    }
+
+    captureWorkCardTransition(cardElement, workId)
+  }
+
   const pauseWorksCarousel = () => {
     worksPausedRef.current = true
   }
@@ -162,27 +312,28 @@ export function HomePage() {
   }
 
   return (
-    <main className="page home-page">
+    <main className="page home-page" ref={pageRef}>
       <section className="hero card" id="hero">
-        <div className="hero-copy">
-          <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
-        </div>
-
+        <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
         <div className="hero-counter">
           <p className="hero-total" aria-live="polite">
             {totalLabel}
           </p>
-          <p className="hero-note">Общий подтвержденный заработок</p>
         </div>
-
-        <div className="hero-actions" aria-label="Быстрые действия">
-          <a href="#works-preview" className="btn btn-primary">
-            Смотреть работы
-          </a>
-          <a href="#tariffs" className="btn btn-ghost">
-            Выбрать тариф
-          </a>
+        <div className="hero-meta">
+          <p className="hero-note">Подтвержденный реальный заработок учеников</p>
+          <p className="hero-live" role="status" aria-live="polite">
+            <span className="hero-live-dot" aria-hidden="true" />
+            Трекинг обновляется в реальном времени
+          </p>
         </div>
+        <a
+          className="hero-scroll"
+          href="#works-preview"
+          aria-label="Прокрутить к блоку работ"
+        >
+          <span className="hero-scroll-icon" aria-hidden="true" />
+        </a>
       </section>
 
       <section className="section" id="works-preview">
@@ -239,6 +390,7 @@ export function HomePage() {
                           <p className="work-result">{work.result}</p>
                           <Link
                             to={routes.workDetails(work.id)}
+                            onClick={(event) => handleWorkLinkClick(event, work.id)}
                             tabIndex={groupIndex === 0 ? undefined : -1}
                             aria-hidden={groupIndex !== 0}
                           >
