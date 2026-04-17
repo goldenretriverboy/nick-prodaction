@@ -25,9 +25,6 @@ export function HomePage() {
   const pageRef = useRef<HTMLElement | null>(null)
   const formRef = useRef<HTMLElement | null>(null)
   const animatedValueRef = useRef(0)
-  const worksCarouselRef = useRef<HTMLDivElement | null>(null)
-  const worksPrimaryGroupRef = useRef<HTMLDivElement | null>(null)
-  const worksPausedRef = useRef(false)
 
   const [animatedTotal, setAnimatedTotal] = useState(0)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -175,7 +172,7 @@ export function HomePage() {
       })
 
       const revealTargets = gsap.utils.toArray<HTMLElement>(
-        '.section-subtitle, .works-scroll, .tariffs-grid, .lead-form, .btn-inline',
+        '.section-subtitle, .works-grid, .tariffs-grid, .lead-form, .btn-inline',
       )
 
       revealTargets.forEach((element) => {
@@ -205,51 +202,6 @@ export function HomePage() {
       ],
     },
   )
-
-  useEffect(() => {
-    const container = worksCarouselRef.current
-    const primaryGroup = worksPrimaryGroupRef.current
-
-    if (!container || !primaryGroup) {
-      return
-    }
-
-    const groupWidth = primaryGroup.scrollWidth
-    if (groupWidth <= 0) {
-      return
-    }
-
-    container.scrollLeft = groupWidth
-
-    const speedPxPerSecond = 30
-    let rafId = 0
-    let prevTs = performance.now()
-
-    const animate = (ts: number) => {
-      const delta = ts - prevTs
-      prevTs = ts
-
-      if (!worksPausedRef.current) {
-        container.scrollLeft += (speedPxPerSecond * delta) / 1000
-
-        if (container.scrollLeft >= groupWidth * 2) {
-          container.scrollLeft -= groupWidth
-        }
-
-        if (container.scrollLeft <= 0) {
-          container.scrollLeft += groupWidth
-        }
-      }
-
-      rafId = requestAnimationFrame(animate)
-    }
-
-    rafId = requestAnimationFrame(animate)
-
-    return () => {
-      cancelAnimationFrame(rafId)
-    }
-  }, [worksQuery.data?.items.length])
 
   const totalLabel = useMemo(
     () => `${formatCurrency(animatedTotal)} $`,
@@ -303,14 +255,6 @@ export function HomePage() {
     captureWorkCardTransition(cardElement, workId)
   }
 
-  const pauseWorksCarousel = () => {
-    worksPausedRef.current = true
-  }
-
-  const resumeWorksCarousel = () => {
-    worksPausedRef.current = false
-  }
-
   return (
     <main className="page home-page" ref={pageRef}>
       <section className="hero card" id="hero">
@@ -343,6 +287,7 @@ export function HomePage() {
 
       <section className="section" id="works-preview">
         <div className="section-head">
+          <p className="section-eyebrow">Кейсы выпускников</p>
           <h2 className="section-title">Работы учеников</h2>
           <p className="section-subtitle">
             Показываем превью 6 кейсов и отдельную страницу полного списка.
@@ -364,48 +309,27 @@ export function HomePage() {
             {worksQuery.data.items.length === 0 ? (
               <div className="state-block">Новые работы скоро появятся.</div>
             ) : (
-              <div
-                className="works-scroll"
-                aria-label="Бесконечная карусель работ"
-                ref={worksCarouselRef}
-                onMouseEnter={pauseWorksCarousel}
-                onMouseLeave={resumeWorksCarousel}
-                onPointerDown={pauseWorksCarousel}
-                onPointerUp={resumeWorksCarousel}
-                onFocusCapture={pauseWorksCarousel}
-                onBlurCapture={resumeWorksCarousel}
-              >
-                <div className="works-track">
-                  {[0, 1, 2].map((groupIndex) => (
-                    <div
-                      key={groupIndex}
-                      className={`works-group ${
-                        groupIndex === 0 ? 'works-group-primary' : 'works-group-clone'
-                      }`}
-                      ref={groupIndex === 0 ? worksPrimaryGroupRef : undefined}
-                      aria-hidden={groupIndex !== 0}
-                    >
-                      {worksQuery.data.items.map((work) => (
-                        <article
-                          className="work-card card"
-                          key={`${work.id}-${groupIndex}`}
-                        >
-                          <h3>{work.title}</h3>
-                          <p>{work.summary}</p>
-                          <p className="work-result">{work.result}</p>
-                          <Link
-                            to={routes.workDetails(work.id)}
-                            onClick={(event) => handleWorkLinkClick(event, work.id)}
-                            tabIndex={groupIndex === 0 ? undefined : -1}
-                            aria-hidden={groupIndex !== 0}
-                          >
-                            Открыть кейс
-                          </Link>
-                        </article>
-                      ))}
+              <div className="works-grid" aria-label="Список работ учеников">
+                {worksQuery.data.items.map((work) => (
+                  <article className="work-card card" key={work.id}>
+                    <div className="work-card-head">
+                      <span className="work-card-tag">Кейс ученика</span>
                     </div>
-                  ))}
-                </div>
+                    <h3 className="work-card-title">{work.title}</h3>
+                    <p className="work-card-summary">{work.summary}</p>
+                    <div className="work-card-result-wrap">
+                      <p className="work-card-result-label">Результат</p>
+                      <p className="work-result">{work.result}</p>
+                    </div>
+                    <Link
+                      to={routes.workDetails(work.id)}
+                      className="work-card-link"
+                      onClick={(event) => handleWorkLinkClick(event, work.id)}
+                    >
+                      Открыть кейс
+                    </Link>
+                  </article>
+                ))}
               </div>
             )}
           </>
@@ -418,6 +342,7 @@ export function HomePage() {
 
       <section className="section" id="tariffs">
         <div className="section-head">
+          <p className="section-eyebrow">Пакеты обучения</p>
           <h2 className="section-title">Тарифы</h2>
           <p className="section-subtitle">
             Выберите тариф и сразу заполните заявку.
@@ -448,20 +373,24 @@ export function HomePage() {
                     }`}
                   >
                     <div className="tariff-head">
-                      <h3>{tariff.title}</h3>
-                      {tariff.recommended && <span>Рекомендуемый</span>}
+                      <h3 className="tariff-title">{tariff.title}</h3>
+                      {tariff.recommended && (
+                        <span className="tariff-badge">Рекомендуемый</span>
+                      )}
                     </div>
-                    <p>{tariff.audience}</p>
-                    <ul>
+                    <p className="tariff-audience">{tariff.audience}</p>
+                    <ul className="tariff-includes">
                       {tariff.includes.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
-                    <p className="tariff-format">{tariff.format}</p>
-                    <p className="tariff-price">{tariff.price}</p>
+                    <div className="tariff-foot">
+                      <p className="tariff-format">{tariff.format}</p>
+                      <p className="tariff-price">{tariff.price}</p>
+                    </div>
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="btn btn-primary tariff-cta"
                       onClick={() => onSelectTariff(tariff.title)}
                     >
                       Выбрать тариф
@@ -476,6 +405,7 @@ export function HomePage() {
 
       <section className="section" id="lead-form" ref={formRef}>
         <div className="section-head">
+          <p className="section-eyebrow">Быстрый старт</p>
           <h2 className="section-title">Оставьте заявку</h2>
           <p className="section-subtitle">
             Подберем подходящий формат обучения и маршрут старта.
@@ -497,38 +427,40 @@ export function HomePage() {
         <form className="lead-form card" onSubmit={handleSubmit(onSubmit)}>
           <input type="hidden" {...register('selectedTariff')} />
 
-          <label>
-            Имя
-            <input type="text" placeholder="Ваше имя" {...register('name')} />
-            {errors.name && (
-              <span className="field-error">{errors.name.message}</span>
-            )}
-          </label>
+          <div className="lead-form-grid">
+            <label className="lead-field">
+              <span className="lead-label">Имя</span>
+              <input type="text" placeholder="Ваше имя" {...register('name')} />
+              {errors.name && (
+                <span className="field-error">{errors.name.message}</span>
+              )}
+            </label>
 
-          <label>
-            Telegram или WhatsApp
-            <input
-              type="text"
-              placeholder="@username или +7..."
-              {...register('contact')}
-            />
-            {errors.contact && (
-              <span className="field-error">{errors.contact.message}</span>
-            )}
-          </label>
+            <label className="lead-field">
+              <span className="lead-label">Telegram или WhatsApp</span>
+              <input
+                type="text"
+                placeholder="@username или +7..."
+                {...register('contact')}
+              />
+              {errors.contact && (
+                <span className="field-error">{errors.contact.message}</span>
+              )}
+            </label>
 
-          <label>
-            Цель обучения (опционально)
-            <textarea
-              rows={4}
-              maxLength={300}
-              placeholder="Что хотите получить в результате?"
-              {...register('goal')}
-            />
-            {errors.goal && (
-              <span className="field-error">{errors.goal.message}</span>
-            )}
-          </label>
+            <label className="lead-field lead-field-wide">
+              <span className="lead-label">Цель обучения (опционально)</span>
+              <textarea
+                rows={4}
+                maxLength={300}
+                placeholder="Что хотите получить в результате?"
+                {...register('goal')}
+              />
+              {errors.goal && (
+                <span className="field-error">{errors.goal.message}</span>
+              )}
+            </label>
+          </div>
 
           <p className="selected-tariff">
             Выбранный тариф: <strong>{activeTariff ?? 'не выбран'}</strong>
@@ -547,13 +479,16 @@ export function HomePage() {
 
           <button
             type="submit"
-            className="btn btn-primary"
+            className="btn btn-primary lead-submit"
             disabled={isSubmitting || createLeadMutation.isPending}
           >
             {isSubmitting || createLeadMutation.isPending
               ? 'Отправляем...'
               : 'Отправить заявку'}
           </button>
+          <p className="lead-disclaimer">
+            Обычно отвечаем в Telegram/WhatsApp в течение одного рабочего дня.
+          </p>
         </form>
       </section>
     </main>
