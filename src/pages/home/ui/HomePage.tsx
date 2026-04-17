@@ -78,6 +78,17 @@ export function HomePage() {
 
   useGSAP(
     () => {
+      const splitInstances: SplitText[] = []
+      const heroKicker = pageRef.current?.querySelector<HTMLElement>('.hero-kicker')
+
+      if (heroKicker) {
+        const normalizedText = heroKicker.textContent?.replace(/\s+/g, ' ').trim()
+        if (normalizedText) {
+          heroKicker.textContent = normalizedText
+        }
+        heroKicker.removeAttribute('style')
+      }
+
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
       ).matches
@@ -85,9 +96,6 @@ export function HomePage() {
       if (reduceMotion) {
         return
       }
-
-      const splitInstances: SplitText[] = []
-      const heroKicker = pageRef.current?.querySelector<HTMLElement>('.hero-kicker')
 
       const heroTimeline = gsap.timeline({
         defaults: {
@@ -97,20 +105,12 @@ export function HomePage() {
       })
 
       if (heroKicker) {
-        const kickerSplit = SplitText.create(heroKicker, {
-          type: 'words,chars',
-          wordsClass: 'split-word',
-          charsClass: 'split-char',
-        })
-        splitInstances.push(kickerSplit)
-
         heroTimeline.from(
-          kickerSplit.chars,
+          heroKicker,
           {
-            yPercent: 120,
+            y: 12,
             autoAlpha: 0,
-            stagger: 0.012,
-            duration: 0.52,
+            duration: 0.55,
             ease: 'power2.out',
           },
           0,
@@ -152,8 +152,8 @@ export function HomePage() {
       sectionTitles.forEach((title) => {
         const split = SplitText.create(title, {
           type: 'lines,words',
-          linesClass: 'split-line',
-          wordsClass: 'split-word',
+          linesClass: 'section-split-line',
+          wordsClass: 'section-split-word',
         })
         splitInstances.push(split)
 
@@ -258,23 +258,25 @@ export function HomePage() {
   return (
     <main className="page home-page" ref={pageRef}>
       <section className="hero card" id="hero">
-        <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
-        <div className="hero-counter">
-          <div className="hero-total-stage">
-            <p className="hero-total-depth" aria-hidden="true">
-              {totalLabel}
-            </p>
-            <p className="hero-total" aria-live="polite">
-              {totalLabel}
+        <div className="hero-layout">
+          <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
+          <div className="hero-counter">
+            <div className="hero-total-stage">
+              <p className="hero-total-depth" aria-hidden="true">
+                {totalLabel}
+              </p>
+              <p className="hero-total" aria-live="polite">
+                {totalLabel}
+              </p>
+            </div>
+          </div>
+          <div className="hero-meta">
+            <p className="hero-note">Подтвержденный реальный заработок учеников</p>
+            <p className="hero-live" role="status" aria-live="polite">
+              <span className="hero-live-dot" aria-hidden="true" />
+              Трекинг обновляется в реальном времени
             </p>
           </div>
-        </div>
-        <div className="hero-meta">
-          <p className="hero-note">Подтвержденный реальный заработок учеников</p>
-          <p className="hero-live" role="status" aria-live="polite">
-            <span className="hero-live-dot" aria-hidden="true" />
-            Трекинг обновляется в реальном времени
-          </p>
         </div>
         <a
           className="hero-scroll"

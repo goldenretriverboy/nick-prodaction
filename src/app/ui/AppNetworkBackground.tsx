@@ -26,10 +26,7 @@ export function AppNetworkBackground() {
       '(prefers-reduced-motion: reduce)',
     ).matches
     const hasFinePointer = window.matchMedia('(pointer: fine)').matches
-
-    if (reduceMotion || !hasFinePointer) {
-      return
-    }
+    const hasCoarsePointer = window.matchMedia('(pointer: coarse)').matches
 
     const context = canvas.getContext('2d')
     if (!context) {
@@ -53,13 +50,21 @@ export function AppNetworkBackground() {
     let dpr = 1
     let gridCols = 0
     let gridRows = 0
+    const mobileMode = !hasFinePointer && hasCoarsePointer
+    const lowMotionMode = reduceMotion || mobileMode
 
     const createNodes = () => {
       nodes.length = 0
 
-      const spacing = Math.max(34, Math.min(58, width / 28))
-      const cols = Math.max(14, Math.floor(width / spacing))
-      const rows = Math.max(9, Math.floor(height / spacing))
+      const spacing = lowMotionMode
+        ? Math.max(44, Math.min(74, width / 13))
+        : Math.max(34, Math.min(58, width / 28))
+      const cols = lowMotionMode
+        ? Math.max(10, Math.floor(width / spacing))
+        : Math.max(14, Math.floor(width / spacing))
+      const rows = lowMotionMode
+        ? Math.max(7, Math.floor(height / spacing))
+        : Math.max(9, Math.floor(height / spacing))
       gridCols = cols
       gridRows = rows
       const stepX = width / cols
@@ -113,17 +118,21 @@ export function AppNetworkBackground() {
       }
 
       if (!cursor.active) {
-        cursor.targetX = width / 2 + Math.sin(ts * 0.00016) * width * 0.08
-        cursor.targetY = height / 2 + Math.cos(ts * 0.0002) * height * 0.06
+        cursor.targetX =
+          width / 2 + Math.sin(ts * 0.00016) * width * (lowMotionMode ? 0.05 : 0.08)
+        cursor.targetY =
+          height / 2 + Math.cos(ts * 0.0002) * height * (lowMotionMode ? 0.038 : 0.06)
       }
 
-      cursor.x += (cursor.targetX - cursor.x) * 0.14 * dt
-      cursor.y += (cursor.targetY - cursor.y) * 0.14 * dt
+      cursor.x += (cursor.targetX - cursor.x) * (lowMotionMode ? 0.1 : 0.14) * dt
+      cursor.y += (cursor.targetY - cursor.y) * (lowMotionMode ? 0.1 : 0.14) * dt
 
       context.clearRect(0, 0, width, height)
       context.globalCompositeOperation = 'screen'
 
-      const influenceRadius = Math.max(220, Math.min(width, height) * 0.42)
+      const influenceRadius = lowMotionMode
+        ? Math.max(170, Math.min(width, height) * 0.34)
+        : Math.max(220, Math.min(width, height) * 0.42)
       const normalizedX = (cursor.x / width - 0.5) * 2
       const normalizedY = (cursor.y / height - 0.5) * 2
 
@@ -132,11 +141,17 @@ export function AppNetworkBackground() {
         const offsetY = node.baseY - cursor.y
         const distance = Math.hypot(offsetX, offsetY) || 1
         const influence = Math.max(0, 1 - distance / influenceRadius)
-        const push = influence * 17
+        const push = influence * (lowMotionMode ? 11 : 17)
 
         node.boost = influence
-        node.x = node.baseX + (offsetX / distance) * push + normalizedX * 9 * node.depth
-        node.y = node.baseY + (offsetY / distance) * push + normalizedY * 7 * node.depth
+        node.x =
+          node.baseX +
+          (offsetX / distance) * push +
+          normalizedX * (lowMotionMode ? 6.5 : 9) * node.depth
+        node.y =
+          node.baseY +
+          (offsetY / distance) * push +
+          normalizedY * (lowMotionMode ? 5 : 7) * node.depth
       }
 
       for (const node of nodes) {
@@ -163,8 +178,8 @@ export function AppNetworkBackground() {
 
         for (const neighbor of neighbors) {
           const avgBoost = (node.boost + neighbor.boost) * 0.5
-          context.strokeStyle = `rgba(136, 164, 255, ${0.08 + avgBoost * 0.28})`
-          context.lineWidth = 0.7 + avgBoost * 0.95
+          context.strokeStyle = `rgba(136, 164, 255, ${0.08 + avgBoost * (lowMotionMode ? 0.2 : 0.28)})`
+          context.lineWidth = (lowMotionMode ? 0.62 : 0.7) + avgBoost * (lowMotionMode ? 0.72 : 0.95)
           context.beginPath()
           context.moveTo(node.x, node.y)
           context.lineTo(neighbor.x, neighbor.y)
@@ -173,16 +188,16 @@ export function AppNetworkBackground() {
       }
 
       for (const node of nodes) {
-        const radius = node.radius * (1 + node.boost * 2.15)
-        context.fillStyle = `rgba(206, 222, 255, ${0.14 + node.boost * 0.72})`
+        const radius = node.radius * (1 + node.boost * (lowMotionMode ? 1.7 : 2.15))
+        context.fillStyle = `rgba(206, 222, 255, ${0.14 + node.boost * (lowMotionMode ? 0.56 : 0.72)})`
         context.beginPath()
         context.arc(node.x, node.y, radius, 0, Math.PI * 2)
         context.fill()
 
         if (node.boost > 0.02) {
-          context.fillStyle = `rgba(120, 156, 255, ${0.12 + node.boost * 0.3})`
+          context.fillStyle = `rgba(120, 156, 255, ${0.12 + node.boost * (lowMotionMode ? 0.22 : 0.3)})`
           context.beginPath()
-          context.arc(node.x, node.y, radius * 2.4, 0, Math.PI * 2)
+          context.arc(node.x, node.y, radius * (lowMotionMode ? 1.9 : 2.4), 0, Math.PI * 2)
           context.fill()
         }
       }
@@ -192,6 +207,10 @@ export function AppNetworkBackground() {
     }
 
     const handlePointerMove = (event: PointerEvent) => {
+      if (mobileMode) {
+        return
+      }
+
       cursor.targetX = event.clientX
       cursor.targetY = event.clientY
       cursor.active = true

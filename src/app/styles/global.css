@@ -100,7 +100,7 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .app-network-background {
-    display: none;
+    opacity: 0.72;
   }
 
   .page {
