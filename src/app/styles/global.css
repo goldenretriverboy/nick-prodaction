@@ -1,7 +1,8 @@
 :root {
   --bg: #000;
   --text: #f7f7f9;
-  --text-muted: #9a9aa3;
+  --text-muted: #b3c1e2;
+  --text-soft: #d3def8;
   --brand-hot: #7f96ff;
   --brand-cold: #7f96ff;
   --danger: #ff737b;
@@ -76,7 +77,7 @@ a {
 }
 
 .section-subtitle {
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--text-muted) 86%, white 14%);
   margin: 0;
 }
 
