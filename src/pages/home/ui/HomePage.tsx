@@ -316,9 +316,14 @@ export function HomePage() {
       <section className="hero card" id="hero">
         <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
         <div className="hero-counter">
-          <p className="hero-total" aria-live="polite">
-            {totalLabel}
-          </p>
+          <div className="hero-total-stage">
+            <p className="hero-total-depth" aria-hidden="true">
+              {totalLabel}
+            </p>
+            <p className="hero-total" aria-live="polite">
+              {totalLabel}
+            </p>
+          </div>
         </div>
         <div className="hero-meta">
           <p className="hero-note">Подтвержденный реальный заработок учеников</p>

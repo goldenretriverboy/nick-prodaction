@@ -47,7 +47,39 @@
   text-align: center;
 }
 
-.hero-total {
+.hero-total-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  padding-bottom: clamp(0.6rem, 1.8vw, 1.2rem);
+}
+
+.hero-total-stage::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: min(94vw, 920px);
+  height: clamp(44px, 7vw, 98px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(120, 156, 255, 0.24) 0%,
+    rgba(76, 114, 220, 0.12) 42%,
+    rgba(45, 70, 146, 0) 74%
+  );
+  filter: blur(20px);
+  z-index: -1;
+  animation: total-aura 6.4s ease-in-out infinite;
+}
+
+.hero-total,
+.hero-total-depth {
+  grid-area: 1 / 1;
   margin: 0;
   font-size: clamp(3.9rem, 14.6vw, 10.4rem);
   line-height: 0.84;
@@ -55,8 +87,30 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.hero-total {
+  position: relative;
   color: var(--text);
-  text-shadow: 0 0 34px rgba(127, 150, 255, 0.34);
+  transform: rotateX(5deg) translateY(-0.008em);
+  text-shadow:
+    0 1px 0 rgba(236, 242, 255, 0.78),
+    0 2px 0 rgba(174, 196, 255, 0.24),
+    0 10px 22px rgba(21, 34, 78, 0.38),
+    0 0 18px rgba(127, 150, 255, 0.3);
+  animation: total-float 6.2s ease-in-out infinite;
+}
+
+.hero-total-depth {
+  color: rgba(104, 132, 214, 0.38);
+  transform: rotateX(5deg) translateY(0.054em) scaleY(1.016);
+  filter: blur(1.1px);
+  text-shadow:
+    0 0 1px rgba(160, 186, 255, 0.14),
+    0 8px 16px rgba(20, 34, 82, 0.4),
+    0 0 12px rgba(88, 118, 205, 0.24);
+  pointer-events: none;
+  animation: total-depth-breathe 6.2s ease-in-out infinite;
 }
 
 .hero-kicker {
@@ -550,6 +604,43 @@
   }
 }
 
+@keyframes total-aura {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.99);
+  }
+
+  50% {
+    opacity: 0.88;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
+@keyframes total-float {
+  0%,
+  100% {
+    transform: rotateX(5deg) translateY(-0.008em);
+  }
+
+  50% {
+    transform: rotateX(5deg) translateY(-0.016em);
+  }
+}
+
+@keyframes total-depth-breathe {
+  0%,
+  100% {
+    transform: rotateX(5deg) translateY(0.054em) scaleY(1.016);
+    opacity: 0.72;
+  }
+
+  50% {
+    transform: rotateX(5deg) translateY(0.066em) scaleY(1.02);
+    opacity: 0.86;
+  }
+}
+
 @keyframes live-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(141, 167, 255, 0.72);
@@ -606,6 +697,14 @@
     font-size: clamp(3rem, 17vw, 5.3rem);
   }
 
+  .hero-total-depth {
+    font-size: clamp(3rem, 17vw, 5.3rem);
+  }
+
+  .hero-total-stage::before {
+    width: min(94vw, 620px);
+  }
+
   .hero-kicker {
     transform: translate(-50%, calc(-50% - clamp(108px, 16vh, 154px)));
     max-width: min(92vw, 560px);
@@ -641,6 +740,10 @@
     font-size: clamp(2.5rem, 14.5vw, 3.9rem);
   }
 
+  .hero-total-depth {
+    font-size: clamp(2.5rem, 14.5vw, 3.9rem);
+  }
+
   .hero-kicker {
     max-width: min(92vw, 340px);
     transform: translate(-50%, calc(-50% - clamp(92px, 14vh, 118px)));
@@ -659,9 +762,20 @@
   .hero-live {
     padding-inline: 0.5rem;
   }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-total-stage::before {
+    animation: none;
+  }
+
+  .hero-total,
+  .hero-total-depth {
+    animation: none;
+    transform: none;
+  }
+
   .hero-live-dot {
     animation: none;
   }
