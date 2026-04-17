@@ -47,6 +47,16 @@
   gap: clamp(0.5rem, 1.4vw, 0.92rem);
 }
 
+.hero-topic {
+  margin: 0;
+  font-size: clamp(0.78rem, 0.96vw, 0.9rem);
+  line-height: 1.2;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(176, 198, 255, 0.9);
+  font-weight: 700;
+}
+
 .hero-kicker {
   position: relative;
   margin: 0;
@@ -871,6 +881,11 @@
     letter-spacing: 0;
   }
 
+  .hero-topic {
+    font-size: clamp(0.72rem, 2.4vw, 0.82rem);
+    letter-spacing: 0.1em;
+  }
+
   .hero-meta {
     width: 100%;
     max-width: 460px;
@@ -949,6 +964,11 @@
     line-height: 1.22;
     font-size: clamp(0.96rem, 4.4vw, 1.08rem);
     letter-spacing: 0;
+  }
+
+  .hero-topic {
+    font-size: clamp(0.68rem, 3vw, 0.76rem);
+    letter-spacing: 0.08em;
   }
 
   .hero-meta {

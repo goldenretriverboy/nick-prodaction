@@ -259,6 +259,7 @@ export function HomePage() {
     <main className="page home-page" ref={pageRef}>
       <section className="hero card" id="hero">
         <div className="hero-layout">
+          <p className="hero-topic">Курсы по AI-разработке</p>
           <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
           <div className="hero-counter">
             <div className="hero-total-stage">
