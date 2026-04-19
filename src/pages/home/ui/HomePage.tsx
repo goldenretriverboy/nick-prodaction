@@ -15,11 +15,52 @@ import {
 import { mockEarningsTotal } from '@/shared/config/content'
 import { routes } from '@/shared/config/routes'
 import { formatCurrency } from '@/shared/lib/format-currency'
-import { captureWorkCardTransition } from '@/shared/lib/work-card-transition'
 import { leadFormSchema, type LeadFormValues } from '../model/lead-form'
 import './HomePage.css'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText)
+
+function getYouTubeVideoId(url: string): string | null {
+  const match =
+    url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/) ??
+    url.match(/[?&]v=([a-zA-Z0-9_-]{6,})/) ??
+    url.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/)
+
+  return match?.[1] ?? null
+}
+
+function getYouTubePoster(videoId: string): string {
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+}
+
+function getYouTubeEmbedUrl(
+  videoId: string,
+  mode: 'modal' | 'hover' = 'modal',
+): string {
+  const query = new URLSearchParams({
+    autoplay: '1',
+    mute: '1',
+    rel: '0',
+    modestbranding: '1',
+    playsinline: '1',
+  })
+
+  if (mode === 'hover') {
+    query.set('controls', '0')
+    query.set('loop', '1')
+    query.set('playlist', videoId)
+  } else {
+    query.set('controls', '1')
+  }
+
+  return `https://www.youtube.com/embed/${videoId}?${query.toString()}`
+}
+
+type ActiveVideoModal = {
+  title: string
+  videoId: string
+  link: string
+}
 
 export function HomePage() {
   const pageRef = useRef<HTMLElement | null>(null)
@@ -30,6 +71,12 @@ export function HomePage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [activeTariff, setActiveTariff] = useState<string | null>(null)
+  const [hoveredWorkId, setHoveredWorkId] = useState<string | null>(null)
+  const [hasFinePointer, setHasFinePointer] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [activeVideoModal, setActiveVideoModal] = useState<ActiveVideoModal | null>(
+    null,
+  )
 
   const earningsQuery = useEarningsTotal()
   const worksQuery = useWorksList({ page: 1, limit: 6 })
@@ -75,6 +122,64 @@ export function HomePage() {
 
     requestAnimationFrame(tick)
   }, [targetTotal])
+
+  useEffect(() => {
+    const media = window.matchMedia('(pointer: fine)')
+    const updatePointerType = () => {
+      const nextValue = media.matches
+      setHasFinePointer(nextValue)
+      if (!nextValue) {
+        setHoveredWorkId(null)
+      }
+    }
+
+    updatePointerType()
+    media.addEventListener('change', updatePointerType)
+
+    return () => {
+      media.removeEventListener('change', updatePointerType)
+    }
+  }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const updateReducedMotion = () => {
+      const nextValue = media.matches
+      setPrefersReducedMotion(nextValue)
+      if (nextValue) {
+        setHoveredWorkId(null)
+      }
+    }
+
+    updateReducedMotion()
+    media.addEventListener('change', updateReducedMotion)
+
+    return () => {
+      media.removeEventListener('change', updateReducedMotion)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!activeVideoModal) {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveVideoModal(null)
+      }
+    }
+
+    window.addEventListener('keydown', onEscape)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onEscape)
+    }
+  }, [activeVideoModal])
 
   useGSAP(
     () => {
@@ -172,7 +277,7 @@ export function HomePage() {
       })
 
       const revealTargets = gsap.utils.toArray<HTMLElement>(
-        '.section-subtitle, .works-grid, .tariffs-grid, .lead-form, .btn-inline',
+        '.section-subtitle, .works-grid, .tariffs-grid, .lead-form',
       )
 
       revealTargets.forEach((element) => {
@@ -240,19 +345,22 @@ export function HomePage() {
     }
   }
 
-  const handleWorkLinkClick = (
+  const openVideoModal = (
     event: React.MouseEvent<HTMLAnchorElement>,
-    workId: string,
+    title: string,
+    link: string,
+    videoId: string | null,
   ) => {
-    const cardElement = event.currentTarget.closest<HTMLElement>(
-      '.work-card, .work-line',
-    )
-
-    if (!cardElement) {
+    if (!videoId) {
       return
     }
 
-    captureWorkCardTransition(cardElement, workId)
+    event.preventDefault()
+    setActiveVideoModal({
+      title,
+      videoId,
+      link,
+    })
   }
 
   return (
@@ -290,11 +398,7 @@ export function HomePage() {
 
       <section className="section" id="works-preview">
         <div className="section-head">
-          <p className="section-eyebrow">Кейсы выпускников</p>
-          <h2 className="section-title">Работы учеников</h2>
-          <p className="section-subtitle">
-            Показываем превью 6 кейсов и отдельную страницу полного списка.
-          </p>
+          <h2 className="section-title">Примеры работ</h2>
         </div>
 
         {worksQuery.isLoading && (
@@ -313,34 +417,124 @@ export function HomePage() {
               <div className="state-block">Новые работы скоро появятся.</div>
             ) : (
               <div className="works-grid" aria-label="Список работ учеников">
-                {worksQuery.data.items.map((work) => (
-                  <article className="work-card card" key={work.id}>
-                    <div className="work-card-head">
-                      <span className="work-card-tag">Кейс ученика</span>
-                    </div>
-                    <h3 className="work-card-title">{work.title}</h3>
-                    <p className="work-card-summary">{work.summary}</p>
-                    <div className="work-card-result-wrap">
-                      <p className="work-card-result-label">Результат</p>
-                      <p className="work-result">{work.result}</p>
-                    </div>
-                    <Link
-                      to={routes.workDetails(work.id)}
-                      className="work-card-link"
-                      onClick={(event) => handleWorkLinkClick(event, work.id)}
-                    >
-                      Открыть кейс
-                    </Link>
-                  </article>
-                ))}
+                {worksQuery.data.items.map((work) => {
+                  const videoId = getYouTubeVideoId(work.link)
+                  const poster = work.preview_image ?? (videoId ? getYouTubePoster(videoId) : '')
+                  const isHoverPreviewActive =
+                    Boolean(videoId) &&
+                    hasFinePointer &&
+                    !prefersReducedMotion &&
+                    hoveredWorkId === work.id &&
+                    !activeVideoModal
+                  const resultLines = work.result
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+
+                  return (
+                    <article className="work-card card" key={work.id}>
+                      <a
+                        className="work-card-media"
+                        href={work.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Открыть видео: ${work.title}`}
+                        onMouseEnter={() => {
+                          if (
+                            !hasFinePointer ||
+                            prefersReducedMotion ||
+                            !videoId
+                          ) {
+                            return
+                          }
+                          setHoveredWorkId(work.id)
+                        }}
+                        onMouseLeave={() => {
+                          if (!hasFinePointer) {
+                            return
+                          }
+                          setHoveredWorkId((current) =>
+                            current === work.id ? null : current,
+                          )
+                        }}
+                        onClick={(event) =>
+                          openVideoModal(event, work.title, work.link, videoId)
+                        }
+                      >
+                        {poster && (
+                          <span
+                            className="work-card-media-blur"
+                            style={{ backgroundImage: `url(${poster})` }}
+                            aria-hidden="true"
+                          />
+                        )}
+                        {poster && (
+                          <img
+                            className="work-card-media-image"
+                            src={poster}
+                            alt={`${work.title} — обложка видео`}
+                            loading="lazy"
+                          />
+                        )}
+                        {isHoverPreviewActive && videoId && (
+                          <iframe
+                            className="work-card-media-hover-preview"
+                            src={getYouTubeEmbedUrl(videoId, 'hover')}
+                            title={`Превью ${work.title}`}
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            tabIndex={-1}
+                          />
+                        )}
+                        {!poster && (
+                          <span className="work-card-media-fallback">
+                            Видео недоступно
+                          </span>
+                        )}
+                        <span className="work-card-media-frame" aria-hidden="true" />
+                        <span className="work-card-media-overlay" aria-hidden="true">
+                          <span className="work-card-media-play" />
+                          <span className="work-card-media-text">
+                            Открыть видео
+                          </span>
+                        </span>
+                      </a>
+
+                      <div className="work-card-head">
+                        <span className="work-card-tag">
+                          {work.customer ?? 'Кейс ученика'}
+                        </span>
+                      </div>
+                      <p className="work-card-summary">{work.summary}</p>
+                      <div className="work-card-result-wrap">
+                        <p className="work-card-result-label">Результат</p>
+                        <div className="work-result" role="list">
+                          {resultLines.map((line, index) => (
+                            <p className="work-result-line" role="listitem" key={`${work.id}-${index}`}>
+                              {line}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="work-card-actions">
+                        <a
+                          href={work.link}
+                          className="work-card-link"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(event) =>
+                            openVideoModal(event, work.title, work.link, videoId)
+                          }
+                        >
+                          Смотреть видео
+                        </a>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             )}
           </>
         )}
-
-        <Link className="btn btn-inline" to={routes.works}>
-          Смотреть еще
-        </Link>
       </section>
 
       <section className="section" id="tariffs">
@@ -494,6 +688,44 @@ export function HomePage() {
           </p>
         </form>
       </section>
+
+      {activeVideoModal && (
+        <div
+          className="video-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Видео: ${activeVideoModal.title}`}
+          onClick={() => setActiveVideoModal(null)}
+        >
+          <div className="video-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="video-modal-player">
+              <button
+                type="button"
+                className="video-modal-close"
+                aria-label="Закрыть видео"
+                onClick={() => setActiveVideoModal(null)}
+              >
+                ×
+              </button>
+              <iframe
+                className="video-modal-iframe"
+                src={getYouTubeEmbedUrl(activeVideoModal.videoId, 'modal')}
+                title={`Видео: ${activeVideoModal.title}`}
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowFullScreen
+              />
+            </div>
+            <a
+              href={activeVideoModal.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="video-modal-link"
+            >
+              Открыть на YouTube
+            </a>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

@@ -4,6 +4,8 @@ export type WorkItemDto = {
   summary: string
   result: string
   link: string
+  preview_image?: string
+  customer?: string
 }
 
 export type WorkDetailsResponseDto = WorkItemDto & {
