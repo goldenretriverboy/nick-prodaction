@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: telegram-earnings-backend
+    runtime: node
+    plan: starter
+    region: frankfurt
+    autoDeploy: true
+    buildCommand: npm ci && npm run typecheck
+    startCommand: npm run server:start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: APP_TIMEZONE
+        value: Asia/Almaty
+      - key: DATA_FILE_PATH
+        value: /var/data/store.json
+      - key: CORS_ORIGINS
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ADMIN_TELEGRAM_IDS
+        sync: false
+      - key: API_SECRET
+        sync: false
+    disks:
+      - name: telegram-earnings-data
+        mountPath: /var/data
+        sizeGB: 1

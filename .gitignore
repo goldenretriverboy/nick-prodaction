@@ -25,3 +25,4 @@ dist-ssr
 
 # Local docs (do not track in git)
 docs/superpowers/
+server/data/

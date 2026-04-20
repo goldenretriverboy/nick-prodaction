@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,13 +12,20 @@ import {
   useTariffsList,
   useWorksList,
 } from '@/shared/api'
-import { mockEarningsTotal } from '@/shared/config/content'
 import { routes } from '@/shared/config/routes'
-import { formatCurrency } from '@/shared/lib/format-currency'
 import { leadFormSchema, type LeadFormValues } from '../model/lead-form'
 import './HomePage.css'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText)
+
+const HERO_FALLBACK_TOTAL = 2_200_000
+const HERO_GOAL_TOTAL = 25_000_000
+
+function formatDotSeparatedNumber(value: number): string {
+  return Math.max(0, Math.floor(value))
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
 
 function getYouTubeVideoId(url: string): string | null {
   const match =
@@ -70,10 +77,10 @@ export function HomePage() {
   const [animatedTotal, setAnimatedTotal] = useState(0)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const [activeTariff, setActiveTariff] = useState<string | null>(null)
   const [hoveredWorkId, setHoveredWorkId] = useState<string | null>(null)
   const [hasFinePointer, setHasFinePointer] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+  const [isLeadFormVisible, setIsLeadFormVisible] = useState(false)
   const [activeVideoModal, setActiveVideoModal] = useState<ActiveVideoModal | null>(
     null,
   )
@@ -83,7 +90,7 @@ export function HomePage() {
   const tariffsQuery = useTariffsList()
   const createLeadMutation = useCreateLead()
 
-  const targetTotal = earningsQuery.data?.total_usd ?? mockEarningsTotal.total_usd
+  const targetTotal = earningsQuery.data?.total_usd ?? HERO_FALLBACK_TOTAL
 
   const {
     register,
@@ -181,18 +188,42 @@ export function HomePage() {
     }
   }, [activeVideoModal])
 
+  useEffect(() => {
+    const updateLeadFormVisibility = () => {
+      const formElement = formRef.current
+      if (!formElement) {
+        setIsLeadFormVisible(false)
+        return
+      }
+
+      const rect = formElement.getBoundingClientRect()
+      const viewportHeight =
+        window.innerHeight || document.documentElement.clientHeight
+
+      const isOnLeadForm =
+        rect.top <= viewportHeight * 0.55 &&
+        rect.bottom >= viewportHeight * 0.25
+
+      setIsLeadFormVisible((previous) =>
+        previous === isOnLeadForm ? previous : isOnLeadForm,
+      )
+    }
+
+    const rafId = window.requestAnimationFrame(updateLeadFormVisibility)
+
+    window.addEventListener('scroll', updateLeadFormVisibility, { passive: true })
+    window.addEventListener('resize', updateLeadFormVisibility)
+
+    return () => {
+      window.cancelAnimationFrame(rafId)
+      window.removeEventListener('scroll', updateLeadFormVisibility)
+      window.removeEventListener('resize', updateLeadFormVisibility)
+    }
+  }, [])
+
   useGSAP(
     () => {
       const splitInstances: SplitText[] = []
-      const heroKicker = pageRef.current?.querySelector<HTMLElement>('.hero-kicker')
-
-      if (heroKicker) {
-        const normalizedText = heroKicker.textContent?.replace(/\s+/g, ' ').trim()
-        if (normalizedText) {
-          heroKicker.textContent = normalizedText
-        }
-        heroKicker.removeAttribute('style')
-      }
 
       const reduceMotion = window.matchMedia(
         '(prefers-reduced-motion: reduce)',
@@ -209,42 +240,37 @@ export function HomePage() {
         },
       })
 
-      if (heroKicker) {
-        heroTimeline.from(
-          heroKicker,
+      heroTimeline
+        .from(
+          '.hero-title',
           {
-            y: 12,
+            y: 24,
             autoAlpha: 0,
-            duration: 0.55,
-            ease: 'power2.out',
+            duration: 0.82,
           },
           0,
         )
-      }
-
-      heroTimeline
         .from(
-          '.hero-total',
+          '.hero-earnings-card',
           {
-            y: 40,
-            scale: 0.97,
+            y: 20,
+            scale: 0.98,
             autoAlpha: 0,
-            duration: 0.95,
+            duration: 0.75,
           },
-          0.05,
+          0.18,
         )
         .from(
-          '.hero-note, .hero-live',
+          '.hero-progress-wrap',
           {
-            y: 14,
+            y: 18,
             autoAlpha: 0,
-            duration: 0.62,
-            stagger: 0.08,
+            duration: 0.72,
           },
-          0.24,
+          0.28,
         )
         .from(
-          '.hero-scroll',
+          '.hero-scroll, .hero-float-cta',
           {
             y: 16,
             autoAlpha: 0,
@@ -308,13 +334,19 @@ export function HomePage() {
     },
   )
 
-  const totalLabel = useMemo(
-    () => `${formatCurrency(animatedTotal)} $`,
-    [animatedTotal],
+  const totalLabel = `${formatDotSeparatedNumber(animatedTotal)} ₸`
+  const goalLabel = `${formatDotSeparatedNumber(HERO_GOAL_TOTAL)} тенге`
+  const heroProgressPercent = Math.min(
+    100,
+    Math.max(0, (animatedTotal / HERO_GOAL_TOTAL) * 100),
   )
+  const heroProgressPercentLabel = Math.round(heroProgressPercent)
+  const heroProgressStyle = {
+    '--hero-progress': heroProgressPercent.toFixed(2),
+  } as React.CSSProperties
+  const displayedTariffs = tariffsQuery.data?.items.slice(0, 2) ?? []
 
   const onSelectTariff = (tariffTitle: string) => {
-    setActiveTariff(tariffTitle)
     setValue('selectedTariff', tariffTitle, { shouldValidate: true })
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -331,7 +363,6 @@ export function HomePage() {
       })
 
       setIsSubmitted(true)
-      setActiveTariff(values.selectedTariff ?? null)
       reset({
         name: '',
         contact: '',
@@ -367,26 +398,46 @@ export function HomePage() {
     <main className="page home-page" ref={pageRef}>
       <section className="hero card" id="hero">
         <div className="hero-layout">
-          <p className="hero-topic">Курсы по AI-разработке</p>
-          <p className="hero-kicker">Ученики уже зарабатывают с AI</p>
-          <div className="hero-counter">
-            <div className="hero-total-stage">
-              <p className="hero-total-depth" aria-hidden="true">
-                {totalLabel}
-              </p>
-              <p className="hero-total" aria-live="polite">
-                {totalLabel}
-              </p>
-            </div>
-          </div>
-          <div className="hero-meta">
-            <p className="hero-note">Подтвержденный реальный заработок учеников</p>
+          <h1
+            className="hero-title"
+            aria-label="AI-КОНТЕНТ, КОТОРЫЙ ПРИНОСИТ ДЕНЬГИ"
+          >
+            AI-КОНТЕНТ, КОТОРЫЙ ПРИНОСИТ ДЕНЬГИ
+          </h1>
+
+          <div className="hero-earnings-card">
+            <p className="hero-earnings-label">Заработок учеников</p>
+            <p className="hero-earnings-total" aria-live="polite">
+              {totalLabel}
+            </p>
+            <p className="hero-earnings-goal">цель {goalLabel}</p>
             <p className="hero-live" role="status" aria-live="polite">
               <span className="hero-live-dot" aria-hidden="true" />
-              Трекинг обновляется в реальном времени
+              Обновляется в реальном времени
             </p>
           </div>
+
+          <div className="hero-progress-wrap">
+            <div
+              className="hero-progress"
+              style={heroProgressStyle}
+              role="img"
+              aria-label={`Прогресс ${heroProgressPercentLabel}%`}
+            >
+              <span className="hero-progress-value">{heroProgressPercentLabel}%</span>
+            </div>
+          </div>
         </div>
+        <a
+          className={`hero-float-cta ${
+            isLeadFormVisible ? 'hero-float-cta-hidden' : ''
+          }`}
+          href="#lead-form"
+          aria-label="Перейти к форме заявки"
+          tabIndex={isLeadFormVisible ? -1 : 0}
+        >
+          Оставить заявку
+        </a>
         <a
           className="hero-scroll"
           href="#works-preview"
@@ -397,8 +448,8 @@ export function HomePage() {
       </section>
 
       <section className="section" id="works-preview">
-        <div className="section-head">
-          <h2 className="section-title">Примеры работ</h2>
+        <div className="section-head section-head-centered">
+          <h2 className="section-title section-title-center">Примеры работ</h2>
         </div>
 
         {worksQuery.isLoading && (
@@ -430,11 +481,14 @@ export function HomePage() {
                     .split('\n')
                     .map((line) => line.trim())
                     .filter(Boolean)
+                  const displayLines = resultLines.length > 0
+                    ? resultLines
+                    : [work.summary]
 
                   return (
                     <article className="work-card card" key={work.id}>
                       <a
-                        className="work-card-media"
+                        className="work-card-media work-card-media-portrait"
                         href={work.link}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -491,43 +545,18 @@ export function HomePage() {
                           </span>
                         )}
                         <span className="work-card-media-frame" aria-hidden="true" />
-                        <span className="work-card-media-overlay" aria-hidden="true">
-                          <span className="work-card-media-play" />
-                          <span className="work-card-media-text">
-                            Открыть видео
-                          </span>
+                        <span className="work-card-media-gradient" aria-hidden="true" />
+                        <span className="work-card-metrics" role="list">
+                          {displayLines.map((line, index) => (
+                            <span className="work-card-metric" role="listitem" key={`${work.id}-${index}`}>
+                              <span className="work-card-metric-icon" aria-hidden="true">
+                                {index === 0 ? '◉' : index === 1 ? '♡' : '↗'}
+                              </span>
+                              {line}
+                            </span>
+                          ))}
                         </span>
                       </a>
-
-                      <div className="work-card-head">
-                        <span className="work-card-tag">
-                          {work.customer ?? 'Кейс ученика'}
-                        </span>
-                      </div>
-                      <p className="work-card-summary">{work.summary}</p>
-                      <div className="work-card-result-wrap">
-                        <p className="work-card-result-label">Результат</p>
-                        <div className="work-result" role="list">
-                          {resultLines.map((line, index) => (
-                            <p className="work-result-line" role="listitem" key={`${work.id}-${index}`}>
-                              {line}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="work-card-actions">
-                        <a
-                          href={work.link}
-                          className="work-card-link"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(event) =>
-                            openVideoModal(event, work.title, work.link, videoId)
-                          }
-                        >
-                          Смотреть видео
-                        </a>
-                      </div>
                     </article>
                   )
                 })}
@@ -538,12 +567,8 @@ export function HomePage() {
       </section>
 
       <section className="section" id="tariffs">
-        <div className="section-head">
-          <p className="section-eyebrow">Пакеты обучения</p>
-          <h2 className="section-title">Тарифы</h2>
-          <p className="section-subtitle">
-            Выберите тариф и сразу заполните заявку.
-          </p>
+        <div className="section-head section-head-centered">
+          <h2 className="section-title section-title-center">Тарифы</h2>
         </div>
 
         {tariffsQuery.isLoading && (
@@ -558,11 +583,11 @@ export function HomePage() {
 
         {!tariffsQuery.isLoading && !tariffsQuery.isError && tariffsQuery.data && (
           <>
-            {tariffsQuery.data.items.length === 0 ? (
+            {displayedTariffs.length === 0 ? (
               <div className="state-block">Активные тарифы пока не опубликованы.</div>
             ) : (
               <div className="tariffs-grid">
-                {tariffsQuery.data.items.map((tariff) => (
+                {displayedTariffs.map((tariff) => (
                   <article
                     key={tariff.id}
                     className={`tariff-card card ${
@@ -575,22 +600,21 @@ export function HomePage() {
                         <span className="tariff-badge">Рекомендуемый</span>
                       )}
                     </div>
-                    <p className="tariff-audience">{tariff.audience}</p>
+                    <p className="tariff-price-pill">{tariff.price}</p>
                     <ul className="tariff-includes">
                       {tariff.includes.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
-                    <div className="tariff-foot">
+                    {tariff.format.trim().length > 0 && (
                       <p className="tariff-format">{tariff.format}</p>
-                      <p className="tariff-price">{tariff.price}</p>
-                    </div>
+                    )}
                     <button
                       type="button"
-                      className="btn btn-primary tariff-cta"
+                      className="btn tariff-cta"
                       onClick={() => onSelectTariff(tariff.title)}
                     >
-                      Выбрать тариф
+                      Выбрать
                     </button>
                   </article>
                 ))}
@@ -601,12 +625,10 @@ export function HomePage() {
       </section>
 
       <section className="section" id="lead-form" ref={formRef}>
-        <div className="section-head">
-          <p className="section-eyebrow">Быстрый старт</p>
-          <h2 className="section-title">Оставьте заявку</h2>
-          <p className="section-subtitle">
-            Подберем подходящий формат обучения и маршрут старта.
-          </p>
+        <div className="section-head section-head-centered">
+          <h2 className="section-title section-title-center section-title-caps">
+            Оставьте заявку
+          </h2>
         </div>
 
         {isSubmitted && (
@@ -622,22 +644,19 @@ export function HomePage() {
         )}
 
         <form className="lead-form card" onSubmit={handleSubmit(onSubmit)}>
-          <input type="hidden" {...register('selectedTariff')} />
-
           <div className="lead-form-grid">
             <label className="lead-field">
-              <span className="lead-label">Имя</span>
-              <input type="text" placeholder="Ваше имя" {...register('name')} />
+              <input type="text" placeholder="Имя" aria-label="Имя" {...register('name')} />
               {errors.name && (
                 <span className="field-error">{errors.name.message}</span>
               )}
             </label>
 
             <label className="lead-field">
-              <span className="lead-label">Telegram или WhatsApp</span>
               <input
                 type="text"
-                placeholder="@username или +7..."
+                placeholder="Telegram или WhatsApp"
+                aria-label="Telegram или WhatsApp"
                 {...register('contact')}
               />
               {errors.contact && (
@@ -646,22 +665,28 @@ export function HomePage() {
             </label>
 
             <label className="lead-field lead-field-wide">
-              <span className="lead-label">Цель обучения (опционально)</span>
-              <textarea
-                rows={4}
+              <input
+                type="text"
                 maxLength={300}
-                placeholder="Что хотите получить в результате?"
+                placeholder="Цель обучения (опционально)"
+                aria-label="Цель обучения (опционально)"
                 {...register('goal')}
               />
               {errors.goal && (
                 <span className="field-error">{errors.goal.message}</span>
               )}
             </label>
-          </div>
 
-          <p className="selected-tariff">
-            Выбранный тариф: <strong>{activeTariff ?? 'не выбран'}</strong>
-          </p>
+            <label className="lead-field lead-field-wide">
+              <input
+                type="text"
+                placeholder="Тариф"
+                aria-label="Тариф"
+                readOnly
+                {...register('selectedTariff')}
+              />
+            </label>
+          </div>
 
           <label className="consent-row">
             <input type="checkbox" {...register('consent')} />
@@ -676,12 +701,12 @@ export function HomePage() {
 
           <button
             type="submit"
-            className="btn btn-primary lead-submit"
+            className="btn lead-submit"
             disabled={isSubmitting || createLeadMutation.isPending}
           >
             {isSubmitting || createLeadMutation.isPending
               ? 'Отправляем...'
-              : 'Отправить заявку'}
+              : 'ОТПРАВИТЬ ЗАЯВКУ'}
           </button>
           <p className="lead-disclaimer">
             Обычно отвечаем в Telegram/WhatsApp в течение одного рабочего дня.

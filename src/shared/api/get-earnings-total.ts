@@ -4,7 +4,7 @@ import { requestJson } from './http-client'
 import type { EarningsTotalResponseDto } from './types'
 
 export async function getEarningsTotal(): Promise<EarningsTotalResponseDto> {
-  if (env.useLocalMocks) {
+  if (!env.useLiveEarnings) {
     return mockEarningsTotal
   }
 

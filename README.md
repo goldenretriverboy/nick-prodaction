@@ -32,6 +32,36 @@ npm install
 npm run dev
 ```
 
+### Запуск backend + Telegram bot (dev)
+
+```bash
+cp .env.server.example .env.server
+npm run dev:server
+```
+
+Сервис поднимает:
+
+- `GET /health`
+- `GET /api/public/earnings/total`
+
+Telegram-бот включается только если задан `TELEGRAM_BOT_TOKEN`.
+
+### Интеграция earnings с backend во frontend
+
+Для подключения только блока заработка к backend (остальные данные могут оставаться на моках), добавьте в `.env.local`:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8787
+VITE_USE_LIVE_EARNINGS=true
+VITE_USE_LOCAL_MOCKS=true
+```
+
+Для Vercel:
+
+- `VITE_API_BASE_URL=https://<your-backend-domain>`
+- `VITE_USE_LIVE_EARNINGS=true`
+- `VITE_USE_LOCAL_MOCKS=true`
+
 ### Сборка
 
 ```bash
@@ -53,9 +83,12 @@ npm run preview
 ## Доступные скрипты
 
 - `npm run dev` — локальная разработка
+- `npm run dev:server` — локальный backend + Telegram bot
 - `npm run build` — сборка проекта
+- `npm run typecheck` — проверка TypeScript
 - `npm run lint` — проверка качества кода
 - `npm run preview` — локальный preview production build
+- `npm run server:start` — запуск backend в обычном режиме
 
 ## Архитектура
 

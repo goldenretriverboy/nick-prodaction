@@ -7,7 +7,7 @@ import type {
 } from '@/shared/api/types'
 import videoCover1 from '@/assets/IMG_0061.PNG'
 import videoCover2 from '@/assets/IMG_0062.PNG'
-import videoCover3 from '@/assets/IMG_0063.PNG'
+import videoCover3 from '@/assets/IMG_0626.PNG'
 import videoCover4 from '@/assets/IMG_0064.PNG'
 import videoCover5 from '@/assets/IMG_0065.PNG'
 import videoCover6 from '@/assets/IMG_0066.PNG'
@@ -42,7 +42,7 @@ export const mockWorks: WorkItemDto[] = [
     title: 'Видео для личного блога #3',
     summary: 'Контент для личного блога',
     result: '5 млн просмотров\n80 000 лайков\n246 000 репостов',
-    link: 'https://youtube.com/shorts/C0_xnUx0T88?feature=share',
+    link: 'https://youtube.com/shorts/uBSUvDz2oBI?si=9WG9FPzcygCr8g2r',
     preview_image: videoCover3,
     customer: 'Личный блог',
   },
@@ -78,19 +78,31 @@ export const mockWorks: WorkItemDto[] = [
 export const mockTariffs: TariffDto[] = [
   {
     id: 'start',
-    title: 'Start',
-    audience: 'Для тех, кто хочет быстро войти в тему',
-    includes: ['8 live-сессий', 'База шаблонов', 'Домашние задания с фидбеком'],
-    format: '4 недели, online',
-    price: '49 000 KZT',
+    title: 'БАЗОВЫЙ',
+    audience: '',
+    includes: [
+      'РЕЖИССУРА/НАСМОТРЕННОСТЬ',
+      'СОЗДАНИЕ ИИ-КОНТЕНТА',
+      'БАЗА ПО МОНТАЖУ ВИДЕО',
+      'ПЕРВЫЕ ШАГИ В ЗАРАБОТКЕ',
+    ],
+    format: '',
+    price: 'БЕСПЛАТНО',
   },
   {
     id: 'pro',
-    title: 'Pro',
-    audience: 'Для перехода к коммерческим проектам',
-    includes: ['12 live-сессий', 'Разбор портфолио', 'Поддержка наставника'],
-    format: '6 недель, online',
-    price: '89 000 KZT',
+    title: 'ИНДИВИДУАЛЬНЫЙ',
+    audience: '',
+    includes: [
+      'ОБРАТНАЯ СВЯЗЬ ЛИЧНО ОТ НИКИТЫ',
+      'КАК НАХОДИТЬ И ЗАКРЫВАТЬ КЛИЕНТОВ',
+      'РАЗВИТИЕ ЛИЧНОГО БРЕНДА',
+      'КАК ДЕЛАТЬ ВИРУСНЫЕ ИДЕИ',
+      'РАБОТА С ТОПОВЫМИ AI-ИНСТРУМЕНТАМИ',
+      'ПРИОРИТЕТ В ПЛАТНЫХ ЗАКАЗАХ',
+    ],
+    format: '',
+    price: '250,000 ₸',
     recommended: true,
   },
   {

@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node --watch --experimental-strip-types server/src/index.ts",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server:start": "node --experimental-strip-types server/src/index.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -15,7 +18,10 @@
     "@tanstack/react-query": "^5.99.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cors": "^2.8.6",
     "countup.js": "^2.10.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "gsap": "^3.15.0",
     "lucide-react": "^1.8.0",
     "motion": "^12.38.0",
@@ -24,6 +30,7 @@
     "react-hook-form": "^7.72.1",
     "react-router-dom": "^7.14.1",
     "tailwind-merge": "^3.5.0",
+    "telegraf": "^4.16.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -31,6 +38,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
