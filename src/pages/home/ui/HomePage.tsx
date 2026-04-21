@@ -352,7 +352,7 @@ export function HomePage() {
   const heroProgressStyle = {
     '--hero-progress': heroProgressPercent.toFixed(2),
   } as React.CSSProperties
-  const displayedTariffs = tariffsQuery.data?.items.slice(0, 2) ?? []
+  const displayedTariffs = tariffsQuery.data?.items ?? []
   const tariffOptions = tariffsQuery.data?.items ?? []
 
   const onSelectTariff = (tariffTitle: string) => {
