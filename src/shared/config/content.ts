@@ -105,18 +105,6 @@ export const mockTariffs: TariffDto[] = [
     price: "250,000 ₸",
     recommended: true,
   },
-  {
-    id: "team",
-    title: "Team",
-    audience: "Для командного запуска AI-практик",
-    includes: [
-      "Custom программа",
-      "Синхронные воркшопы",
-      "Шаблоны под ваш процесс",
-    ],
-    format: "По запросу",
-    price: "Индивидуально",
-  },
 ];
 
 export const mockCreateLeadResponse: CreateLeadResponseDto = {
