@@ -14,7 +14,7 @@ export const leadFormSchema = z.object({
     .max(300, 'Цель обучения должна быть до 300 символов')
     .optional()
     .or(z.literal('')),
-  selectedTariff: z.string().optional(),
+  selectedTariff: z.string().min(1, 'Выберите тариф'),
   consent: z.boolean().refine((value) => value, {
     message: 'Нужно согласие с политикой',
   }),

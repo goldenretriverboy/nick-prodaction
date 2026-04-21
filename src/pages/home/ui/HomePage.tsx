@@ -353,9 +353,13 @@ export function HomePage() {
     '--hero-progress': heroProgressPercent.toFixed(2),
   } as React.CSSProperties
   const displayedTariffs = tariffsQuery.data?.items.slice(0, 2) ?? []
+  const tariffOptions = tariffsQuery.data?.items ?? []
 
   const onSelectTariff = (tariffTitle: string) => {
-    setValue('selectedTariff', tariffTitle, { shouldValidate: true })
+    setValue('selectedTariff', tariffTitle, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -460,7 +464,9 @@ export function HomePage() {
 
       <section className="section" id="works-preview">
         <div className="section-head section-head-centered">
-          <h2 className="section-title section-title-center">Примеры работ</h2>
+          <h2 className="section-title section-title-center section-title-prominent">
+            Примеры работ
+          </h2>
         </div>
 
         {worksQuery.isLoading && (
@@ -579,7 +585,9 @@ export function HomePage() {
 
       <section className="section" id="tariffs">
         <div className="section-head section-head-centered">
-          <h2 className="section-title section-title-center">Тарифы</h2>
+          <h2 className="section-title section-title-center section-title-prominent">
+            Тарифы
+          </h2>
         </div>
 
         {tariffsQuery.isLoading && (
@@ -637,7 +645,7 @@ export function HomePage() {
 
       <section className="section" id="lead-form" ref={formRef}>
         <div className="section-head section-head-centered">
-          <h2 className="section-title section-title-center section-title-caps">
+          <h2 className="section-title section-title-center section-title-caps section-title-prominent">
             Оставьте заявку
           </h2>
         </div>
@@ -689,13 +697,21 @@ export function HomePage() {
             </label>
 
             <label className="lead-field lead-field-wide">
-              <input
-                type="text"
-                placeholder="Тариф"
+              <select
                 aria-label="Тариф"
-                readOnly
                 {...register('selectedTariff')}
-              />
+                disabled={tariffsQuery.isLoading || tariffOptions.length === 0}
+                defaultValue=""
+              >
+                <option value="" disabled>
+                  {tariffsQuery.isLoading ? 'Загружаем тарифы...' : 'Выберите тариф'}
+                </option>
+                {tariffOptions.map((tariff) => (
+                  <option key={tariff.id} value={tariff.title}>
+                    {tariff.title}
+                  </option>
+                ))}
+              </select>
               {errors.selectedTariff && (
                 <span className="field-error">{errors.selectedTariff.message}</span>
               )}
