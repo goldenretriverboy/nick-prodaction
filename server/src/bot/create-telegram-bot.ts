@@ -11,6 +11,8 @@ type CreateTelegramBotOptions = {
   timeZone: string
 }
 
+const TELEGRAM_MESSAGE_MAX_LENGTH = 3500
+
 type TelegramSender = {
   id: number
   username: string | null
@@ -92,6 +94,33 @@ async function handleAddAmount(
   )
 }
 
+function splitLinesForTelegram(lines: string[]): string[] {
+  const chunks: string[] = []
+  let currentChunk: string[] = []
+  let currentLength = 0
+
+  for (const line of lines) {
+    const lineLength = line.length + 1
+    if (
+      currentChunk.length > 0 &&
+      currentLength + lineLength > TELEGRAM_MESSAGE_MAX_LENGTH
+    ) {
+      chunks.push(currentChunk.join('\n'))
+      currentChunk = []
+      currentLength = 0
+    }
+
+    currentChunk.push(line)
+    currentLength += lineLength
+  }
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join('\n'))
+  }
+
+  return chunks
+}
+
 export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<Context> {
   const bot = new Telegraf(options.token)
 
@@ -121,6 +150,7 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
         '/add <amount> - добавить сумму в USD',
         '/total - общая сумма (admin)',
         '/last [n] - последние записи (admin)',
+        '/entries (или /all) - все пополнения с ID (admin)',
         '/edit <entry_id> <amount> - редактировать запись (admin)',
         '/delete <entry_id> - удалить запись (admin)',
       ].join('\n'),
@@ -217,6 +247,48 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
 
     await ctx.reply(lines.join('\n'))
   })
+
+  const handleListAllEntries = async (ctx: Context) => {
+    const adminId = await requireAdmin(ctx, options.store)
+    if (!adminId) {
+      return
+    }
+
+    const entries = options.store.getAllEntries()
+    options.store.appendAuditLog({
+      adminTelegramUserId: adminId,
+      action: 'entries',
+      payload: { total: entries.length },
+    })
+
+    if (!entries.length) {
+      await ctx.reply('Записей пока нет.')
+      return
+    }
+
+    const lines = entries.map((entry, index) => {
+      const label = options.store.getUserLabel(entry.telegramUserId)
+      const createdAt = formatDateTimeInTimeZone(entry.createdAt, options.timeZone)
+      return `${index + 1}. ${entry.id} | ${formatUsdAmount(entry.amountUsd)} | ${label} | ${createdAt}`
+    })
+
+    const chunks = splitLinesForTelegram(lines)
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+      await ctx.reply(
+        [
+          `Пополнения: ${entries.length} (часть ${chunkIndex + 1}/${chunks.length})`,
+          chunks[chunkIndex],
+        ].join('\n'),
+      )
+    }
+
+    await ctx.reply(
+      'Для правки: /edit <entry_id> <amount>\nДля удаления: /delete <entry_id>',
+    )
+  }
+
+  bot.command('entries', handleListAllEntries)
+  bot.command('all', handleListAllEntries)
 
   bot.command('edit', async (ctx) => {
     const adminId = await requireAdmin(ctx, options.store)

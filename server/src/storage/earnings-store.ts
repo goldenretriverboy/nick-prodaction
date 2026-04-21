@@ -240,10 +240,14 @@ export class EarningsStore {
     return deleted
   }
 
+  getAllEntries(): EarningsEntry[] {
+    return [...this.data.entries].sort(
+      (left, right) => right.createdAt.localeCompare(left.createdAt),
+    )
+  }
+
   getLastEntries(limit: number): EarningsEntry[] {
-    return [...this.data.entries]
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
-      .slice(0, limit)
+    return this.getAllEntries().slice(0, limit)
   }
 
   getTotalSnapshot(): {
