@@ -1,4 +1,4 @@
-export function parseUsdAmount(input: string): number | null {
+export function parseKztAmount(input: string): number | null {
   const normalized = input.trim().replace(',', '.')
 
   if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
@@ -13,11 +13,11 @@ export function parseUsdAmount(input: string): number | null {
   return Number(parsed.toFixed(2))
 }
 
-export function formatUsdAmount(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatKztAmount(amount: number): string {
+  return new Intl.NumberFormat('ru-KZ', {
     style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
+    currency: 'KZT',
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount)
 }

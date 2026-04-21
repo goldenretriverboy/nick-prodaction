@@ -1,7 +1,7 @@
 import type { Context } from 'telegraf'
 import { Telegraf } from 'telegraf'
 import { message } from 'telegraf/filters'
-import { formatUsdAmount, parseUsdAmount } from '../lib/amount.ts'
+import { formatKztAmount, parseKztAmount } from '../lib/amount.ts'
 import { formatDateTimeInTimeZone } from '../lib/time.ts'
 import type { EarningsStore } from '../storage/earnings-store.ts'
 
@@ -74,22 +74,22 @@ async function handleAddAmount(
     return
   }
 
-  const amountUsd = parseUsdAmount(amountInput)
-  if (amountUsd === null) {
+  const amountKzt = parseKztAmount(amountInput)
+  if (amountKzt === null) {
     await ctx.reply(
-      'Неверный формат суммы. Отправьте число в USD, например: 150 или 150.75',
+      'Неверный формат суммы. Отправьте число в тенге, например: 15000 или 15000.50',
     )
     return
   }
 
-  const entry = store.addEarningsEntry(sender.id, amountUsd)
+  const entry = store.addEarningsEntry(sender.id, amountKzt)
   const totals = store.getTotalSnapshot()
 
   await ctx.reply(
     [
-      `Сумма сохранена: ${formatUsdAmount(amountUsd)}`,
+      `Сумма сохранена: ${formatKztAmount(amountKzt)}`,
       `ID записи: ${entry.id}`,
-      `Общий заработок: ${formatUsdAmount(totals.totalUsd)}`,
+      `Общий заработок: ${formatKztAmount(totals.totalUsd)}`,
     ].join('\n'),
   )
 }
@@ -135,8 +135,8 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
 
     await ctx.reply(
       [
-        'Бот для учета заработка в USD.',
-        'Отправьте сумму сообщением (например: 120.50) или командой /add 120.50.',
+        'Бот для учета заработка в тенге (KZT).',
+        'Отправьте сумму сообщением (например: 12000) или командой /add 12000.',
         'Количество отправок не ограничено.',
       ].join('\n'),
     )
@@ -147,7 +147,7 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
       [
         'Команды:',
         '/id - показать ваш Telegram user id',
-        '/add <amount> - добавить сумму в USD',
+        '/add <amount> - добавить сумму в тенге',
         '/total - общая сумма (admin)',
         '/last [n] - последние записи (admin)',
         '/entries (или /all) - все пополнения с ID (admin)',
@@ -206,7 +206,7 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
 
     await ctx.reply(
       [
-        `Общая сумма: ${formatUsdAmount(totals.totalUsd)}`,
+        `Общая сумма: ${formatKztAmount(totals.totalUsd)}`,
         `Количество записей: ${totals.reportsCount}`,
         `Обновлено: ${formatDateTimeInTimeZone(totals.updatedAt, options.timeZone)}`,
       ].join('\n'),
@@ -242,7 +242,7 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
     const lines = entries.map((entry, index) => {
       const label = options.store.getUserLabel(entry.telegramUserId)
       const createdAt = formatDateTimeInTimeZone(entry.createdAt, options.timeZone)
-      return `${index + 1}. ${entry.id} | ${formatUsdAmount(entry.amountUsd)} | ${label} | ${createdAt}`
+      return `${index + 1}. ${entry.id} | ${formatKztAmount(entry.amountUsd)} | ${label} | ${createdAt}`
     })
 
     await ctx.reply(lines.join('\n'))
@@ -269,7 +269,7 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
     const lines = entries.map((entry, index) => {
       const label = options.store.getUserLabel(entry.telegramUserId)
       const createdAt = formatDateTimeInTimeZone(entry.createdAt, options.timeZone)
-      return `${index + 1}. ${entry.id} | ${formatUsdAmount(entry.amountUsd)} | ${label} | ${createdAt}`
+      return `${index + 1}. ${entry.id} | ${formatKztAmount(entry.amountUsd)} | ${label} | ${createdAt}`
     })
 
     const chunks = splitLinesForTelegram(lines)
@@ -302,13 +302,13 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
       return
     }
 
-    const amountUsd = parseUsdAmount(amountInput)
-    if (amountUsd === null) {
-      await ctx.reply('Неверный формат суммы. Пример: /edit <id> 125.75')
+    const amountKzt = parseKztAmount(amountInput)
+    if (amountKzt === null) {
+      await ctx.reply('Неверный формат суммы. Пример: /edit <id> 12500.50')
       return
     }
 
-    const updated = options.store.editEarningsEntry(entryId, amountUsd, adminId)
+    const updated = options.store.editEarningsEntry(entryId, amountKzt, adminId)
     if (!updated) {
       await ctx.reply('Запись не найдена.')
       return
@@ -317,10 +317,10 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
     options.store.appendAuditLog({
       adminTelegramUserId: adminId,
       action: 'edit',
-      payload: { entryId, amountUsd },
+      payload: { entryId, amountKzt },
     })
 
-    await ctx.reply(`Запись обновлена: ${entryId} -> ${formatUsdAmount(amountUsd)}`)
+    await ctx.reply(`Запись обновлена: ${entryId} -> ${formatKztAmount(amountKzt)}`)
   })
 
   bot.command('delete', async (ctx) => {
@@ -356,7 +356,7 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
       return
     }
 
-    if (parseUsdAmount(text) === null) {
+    if (parseKztAmount(text) === null) {
       return
     }
 
