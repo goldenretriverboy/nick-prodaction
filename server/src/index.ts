@@ -12,6 +12,10 @@ for (const adminId of env.adminTelegramIds) {
   store.setUserAccess(adminId, true)
 }
 
+for (const allowedId of env.allowedTelegramIds) {
+  store.setUserAccess(allowedId, true)
+}
+
 const app = createApp({
   store,
   corsOrigins: env.corsOrigins,

@@ -13,12 +13,13 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
   ADMIN_TELEGRAM_IDS: z.string().default(''),
+  ALLOWED_TELEGRAM_IDS: z.string().default(''),
   API_SECRET: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.parse(process.env)
 
-function parseAdminIds(value: string): number[] {
+function parseTelegramIds(value: string): number[] {
   return value
     .split(',')
     .map((item) => item.trim())
@@ -42,6 +43,7 @@ export const env = {
     : path.resolve(process.cwd(), parsed.DATA_FILE_PATH),
   corsOrigins: parseCorsOrigins(parsed.CORS_ORIGINS),
   telegramBotToken: parsed.TELEGRAM_BOT_TOKEN,
-  adminTelegramIds: parseAdminIds(parsed.ADMIN_TELEGRAM_IDS),
+  adminTelegramIds: parseTelegramIds(parsed.ADMIN_TELEGRAM_IDS),
+  allowedTelegramIds: parseTelegramIds(parsed.ALLOWED_TELEGRAM_IDS),
   apiSecret: parsed.API_SECRET,
 } as const

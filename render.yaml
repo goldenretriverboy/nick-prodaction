@@ -21,6 +21,8 @@ services:
         sync: false
       - key: ADMIN_TELEGRAM_IDS
         sync: false
+      - key: ALLOWED_TELEGRAM_IDS
+        sync: false
       - key: API_SECRET
         sync: false
     disk:

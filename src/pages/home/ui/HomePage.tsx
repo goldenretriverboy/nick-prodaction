@@ -19,7 +19,6 @@ import './HomePage.css'
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText)
 
-const HERO_FALLBACK_TOTAL = 2_200_000
 const HERO_GOAL_TOTAL = 25_000_000
 
 function formatDotSeparatedNumber(value: number): string {
@@ -99,7 +98,7 @@ export function HomePage() {
   const tariffsQuery = useTariffsList()
   const createLeadMutation = useCreateLead()
 
-  const targetTotal = normalizeAmount(earningsQuery.data?.total_usd) || HERO_FALLBACK_TOTAL
+  const targetTotal = normalizeAmount(earningsQuery.data?.total_usd)
 
   const {
     register,

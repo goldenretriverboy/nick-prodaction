@@ -1,5 +1,6 @@
 import { mockEarningsTotal } from '@/shared/config/content'
 import { env } from '@/shared/config/env'
+import { writeCachedEarningsTotal } from './earnings-total-cache'
 import { requestJson } from './http-client'
 import type { EarningsTotalResponseDto } from './types'
 
@@ -8,5 +9,9 @@ export async function getEarningsTotal(): Promise<EarningsTotalResponseDto> {
     return mockEarningsTotal
   }
 
-  return requestJson<EarningsTotalResponseDto>('/api/public/earnings/total')
+  const response = await requestJson<EarningsTotalResponseDto>(
+    '/api/public/earnings/total',
+  )
+  writeCachedEarningsTotal(response)
+  return response
 }

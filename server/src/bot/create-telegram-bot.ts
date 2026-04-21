@@ -123,8 +123,6 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
         '/last [n] - последние записи (admin)',
         '/edit <entry_id> <amount> - редактировать запись (admin)',
         '/delete <entry_id> - удалить запись (admin)',
-        '/grant <telegram_user_id> - дать доступ пользователю (admin)',
-        '/revoke <telegram_user_id> - забрать доступ у пользователя (admin)',
       ].join('\n'),
     )
   })
@@ -278,52 +276,6 @@ export function createTelegramBot(options: CreateTelegramBotOptions): Telegraf<C
     })
 
     await ctx.reply(`Запись удалена: ${entryId}`)
-  })
-
-  bot.command('grant', async (ctx) => {
-    const adminId = await requireAdmin(ctx, options.store)
-    if (!adminId) {
-      return
-    }
-
-    const [targetIdInput] = extractCommandArgs(ctx)
-    const targetId = targetIdInput ? Number.parseInt(targetIdInput, 10) : Number.NaN
-    if (!Number.isFinite(targetId)) {
-      await ctx.reply('Использование: /grant <telegram_user_id>')
-      return
-    }
-
-    options.store.setUserAccess(targetId, true)
-    options.store.appendAuditLog({
-      adminTelegramUserId: adminId,
-      action: 'grant',
-      payload: { targetId },
-    })
-
-    await ctx.reply(`Доступ открыт для пользователя ${targetId}.`)
-  })
-
-  bot.command('revoke', async (ctx) => {
-    const adminId = await requireAdmin(ctx, options.store)
-    if (!adminId) {
-      return
-    }
-
-    const [targetIdInput] = extractCommandArgs(ctx)
-    const targetId = targetIdInput ? Number.parseInt(targetIdInput, 10) : Number.NaN
-    if (!Number.isFinite(targetId)) {
-      await ctx.reply('Использование: /revoke <telegram_user_id>')
-      return
-    }
-
-    options.store.setUserAccess(targetId, false)
-    options.store.appendAuditLog({
-      adminTelegramUserId: adminId,
-      action: 'revoke',
-      payload: { targetId },
-    })
-
-    await ctx.reply(`Доступ закрыт для пользователя ${targetId}.`)
   })
 
   bot.on(message('text'), async (ctx) => {

@@ -4,7 +4,7 @@
 
 - Принимает суммы заработка в USD через Telegram-бота.
 - Принимает отправки без лимита по количеству записей.
-- Работает по whitelist (`/grant` и `/revoke`).
+- Работает по whitelist через env `ALLOWED_TELEGRAM_IDS`.
 - Отдает агрегированную сумму в API для фронтенда.
 
 ## Переменные окружения
@@ -17,6 +17,7 @@
 - `CORS_ORIGINS` - разрешенные источники через запятую.
 - `TELEGRAM_BOT_TOKEN` - токен бота.
 - `ADMIN_TELEGRAM_IDS` - ID администраторов через запятую.
+- `ALLOWED_TELEGRAM_IDS` - ID пользователей с правом отправки сумм через запятую.
 - `API_SECRET` - секрет для private endpoint (опционально).
 
 ## Команды бота
@@ -28,15 +29,14 @@
 - `/last [n]` - последние записи (admin).
 - `/edit <entry_id> <amount>` - редактировать запись (admin).
 - `/delete <entry_id>` - удалить запись (admin).
-- `/grant <telegram_user_id>` - открыть доступ пользователю (admin).
-- `/revoke <telegram_user_id>` - закрыть доступ пользователю (admin).
 
 ## Как узнать telegram_user_id пользователя
 
 1. Пользователь открывает бота и отправляет `/id`.
 2. Бот возвращает строку вида `Ваш telegram_user_id: 123456789`.
-3. Админ добавляет доступ командой:
-   - `/grant 123456789`
+3. Админ добавляет доступ через env сервиса:
+   - `ALLOWED_TELEGRAM_IDS=123456789,987654321`
+4. Перезапускает деплой сервиса.
 
 ## API
 
@@ -55,6 +55,7 @@
    - `CORS_ORIGINS=https://<your-vercel-domain>`
    - `TELEGRAM_BOT_TOKEN=<bot-token>`
    - `ADMIN_TELEGRAM_IDS=<your-telegram-id>`
+   - `ALLOWED_TELEGRAM_IDS=<comma-separated-user-ids>`
    - `API_SECRET=<strong-secret>` (опционально, но рекомендовано)
 5. Убедитесь, что health отвечает:
    - `https://<render-service-domain>/health`
