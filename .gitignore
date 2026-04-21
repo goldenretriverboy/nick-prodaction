@@ -27,4 +27,5 @@ dist-ssr
 docs/superpowers/
 server/data/
 .env
+.env.server
 .vercel

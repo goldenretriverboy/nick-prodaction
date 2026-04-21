@@ -20,6 +20,7 @@ const app = createApp({
   store,
   corsOrigins: env.corsOrigins,
   apiSecret: env.apiSecret,
+  emailJs: env.emailJs,
 })
 
 const server = app.listen(env.serverPort, () => {

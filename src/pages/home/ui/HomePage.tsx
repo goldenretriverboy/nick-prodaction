@@ -7,7 +7,6 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import {
-  sendLeadEmail,
   useCreateLead,
   useEarningsTotal,
   useTariffsList,
@@ -373,19 +372,6 @@ export function HomePage() {
         goal,
         selected_tariff: selectedTariff,
       })
-
-      try {
-        await sendLeadEmail({
-          name: values.name,
-          contact: values.contact,
-          goal,
-          selectedTariff,
-          consent: values.consent,
-        })
-      } catch (error) {
-        // Lead is already saved, do not fail UX because of notification channel.
-        console.error('EmailJS send failed after lead create:', error)
-      }
 
       setIsSubmitted(true)
       reset({

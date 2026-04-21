@@ -25,6 +25,12 @@ services:
         sync: false
       - key: API_SECRET
         sync: false
+      - key: EMAILJS_SERVICE_ID
+        sync: false
+      - key: EMAILJS_TEMPLATE_ID
+        sync: false
+      - key: EMAILJS_PUBLIC_KEY
+        sync: false
     disk:
       name: telegram-earnings-data
       mountPath: /var/data

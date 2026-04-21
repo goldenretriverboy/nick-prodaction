@@ -6,6 +6,7 @@
 - Принимает отправки без лимита по количеству записей.
 - Работает по whitelist через env `ALLOWED_TELEGRAM_IDS`.
 - Отдает агрегированную сумму в API для фронтенда.
+- Принимает лиды через `POST /api/public/leads` с базовой защитой от abuse.
 
 ## Переменные окружения
 
@@ -19,6 +20,9 @@
 - `ADMIN_TELEGRAM_IDS` - ID администраторов через запятую.
 - `ALLOWED_TELEGRAM_IDS` - ID пользователей с правом отправки сумм через запятую.
 - `API_SECRET` - секрет для private endpoint (опционально).
+- `EMAILJS_SERVICE_ID` - EmailJS service id (опционально, для серверной отправки лидов).
+- `EMAILJS_TEMPLATE_ID` - EmailJS template id (опционально).
+- `EMAILJS_PUBLIC_KEY` - EmailJS public key (опционально).
 
 ## Команды бота
 
@@ -42,6 +46,7 @@
 
 - `GET /health`
 - `GET /api/public/earnings/total`
+- `POST /api/public/leads`
 - `GET /api/private/earnings/entries?limit=20` (требует `x-api-secret`)
 
 ## Deploy на Render (Blueprint)
@@ -57,6 +62,9 @@
    - `ADMIN_TELEGRAM_IDS=<your-telegram-id>`
    - `ALLOWED_TELEGRAM_IDS=<comma-separated-user-ids>`
    - `API_SECRET=<strong-secret>` (опционально, но рекомендовано)
+   - `EMAILJS_SERVICE_ID=<service_id>` (опционально)
+   - `EMAILJS_TEMPLATE_ID=<template_id>` (опционально)
+   - `EMAILJS_PUBLIC_KEY=<public_key>` (опционально)
 5. Убедитесь, что health отвечает:
    - `https://<render-service-domain>/health`
 6. На Vercel добавьте:

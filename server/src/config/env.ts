@@ -15,6 +15,9 @@ const envSchema = z.object({
   ADMIN_TELEGRAM_IDS: z.string().default(''),
   ALLOWED_TELEGRAM_IDS: z.string().default(''),
   API_SECRET: z.string().min(1).optional(),
+  EMAILJS_SERVICE_ID: z.string().min(1).optional(),
+  EMAILJS_TEMPLATE_ID: z.string().min(1).optional(),
+  EMAILJS_PUBLIC_KEY: z.string().min(1).optional(),
 })
 
 const parsed = envSchema.parse(process.env)
@@ -46,4 +49,12 @@ export const env = {
   adminTelegramIds: parseTelegramIds(parsed.ADMIN_TELEGRAM_IDS),
   allowedTelegramIds: parseTelegramIds(parsed.ALLOWED_TELEGRAM_IDS),
   apiSecret: parsed.API_SECRET,
+  emailJs:
+    parsed.EMAILJS_SERVICE_ID && parsed.EMAILJS_TEMPLATE_ID && parsed.EMAILJS_PUBLIC_KEY
+      ? {
+          serviceId: parsed.EMAILJS_SERVICE_ID,
+          templateId: parsed.EMAILJS_TEMPLATE_ID,
+          publicKey: parsed.EMAILJS_PUBLIC_KEY,
+        }
+      : undefined,
 } as const
