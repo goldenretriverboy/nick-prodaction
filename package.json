@@ -13,6 +13,7 @@
     "server:start": "node --experimental-strip-types server/src/index.ts"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.99.0",

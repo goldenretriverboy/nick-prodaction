@@ -62,6 +62,16 @@ VITE_USE_LOCAL_MOCKS=true
 - `VITE_USE_LIVE_EARNINGS=true`
 - `VITE_USE_LOCAL_MOCKS=true`
 
+### EmailJS для формы заявки
+
+Для отправки заявок на почту через EmailJS добавьте в `.env.local`:
+
+```bash
+VITE_EMAILJS_SERVICE_ID=service_kwiweun
+VITE_EMAILJS_TEMPLATE_ID=template_25tuodc
+VITE_EMAILJS_PUBLIC_KEY=<your_emailjs_public_key>
+```
+
 ### Сборка
 
 ```bash

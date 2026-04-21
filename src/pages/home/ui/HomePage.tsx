@@ -7,6 +7,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import {
+  sendLeadEmail,
   useCreateLead,
   useEarningsTotal,
   useTariffsList,
@@ -25,6 +26,14 @@ function formatDotSeparatedNumber(value: number): string {
   return Math.max(0, Math.floor(value))
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
+function normalizeAmount(value: number | null | undefined): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0
+  }
+
+  return Math.max(0, Math.floor(value))
 }
 
 function getYouTubeVideoId(url: string): string | null {
@@ -90,7 +99,7 @@ export function HomePage() {
   const tariffsQuery = useTariffsList()
   const createLeadMutation = useCreateLead()
 
-  const targetTotal = earningsQuery.data?.total_usd ?? HERO_FALLBACK_TOTAL
+  const targetTotal = normalizeAmount(earningsQuery.data?.total_usd) || HERO_FALLBACK_TOTAL
 
   const {
     register,
@@ -334,11 +343,12 @@ export function HomePage() {
     },
   )
 
-  const totalLabel = `${formatDotSeparatedNumber(animatedTotal)} ₸`
+  const displayedTotal = normalizeAmount(animatedTotal)
+  const totalLabel = `${formatDotSeparatedNumber(displayedTotal)} ₸`
   const goalLabel = `${formatDotSeparatedNumber(HERO_GOAL_TOTAL)} тенге`
   const heroProgressPercent = Math.min(
     100,
-    Math.max(0, (animatedTotal / HERO_GOAL_TOTAL) * 100),
+    Math.max(0, (displayedTotal / HERO_GOAL_TOTAL) * 100),
   )
   const heroProgressPercentLabel = Math.round(heroProgressPercent)
   const heroProgressStyle = {
@@ -355,19 +365,35 @@ export function HomePage() {
     setSubmitError(null)
 
     try {
+      const goal = values.goal || undefined
+      const selectedTariff = values.selectedTariff || undefined
+
       await createLeadMutation.mutateAsync({
         name: values.name,
         contact: values.contact,
-        goal: values.goal || undefined,
-        selected_tariff: values.selectedTariff || undefined,
+        goal,
+        selected_tariff: selectedTariff,
       })
+
+      try {
+        await sendLeadEmail({
+          name: values.name,
+          contact: values.contact,
+          goal,
+          selectedTariff,
+          consent: values.consent,
+        })
+      } catch (error) {
+        // Lead is already saved, do not fail UX because of notification channel.
+        console.error('EmailJS send failed after lead create:', error)
+      }
 
       setIsSubmitted(true)
       reset({
         name: '',
         contact: '',
         goal: '',
-        selectedTariff: values.selectedTariff,
+        selectedTariff,
         consent: false,
       })
     } catch {
@@ -685,6 +711,9 @@ export function HomePage() {
                 readOnly
                 {...register('selectedTariff')}
               />
+              {errors.selectedTariff && (
+                <span className="field-error">{errors.selectedTariff.message}</span>
+              )}
             </label>
           </div>
 
