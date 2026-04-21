@@ -23,7 +23,7 @@ services:
         sync: false
       - key: API_SECRET
         sync: false
-    disks:
-      - name: telegram-earnings-data
-        mountPath: /var/data
-        sizeGB: 1
+    disk:
+      name: telegram-earnings-data
+      mountPath: /var/data
+      sizeGB: 1
