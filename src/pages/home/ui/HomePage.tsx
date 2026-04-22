@@ -385,8 +385,36 @@ export function HomePage() {
         selectedTariff,
         consent: false,
       })
-    } catch {
+    } catch (error: unknown) {
       setIsSubmitted(false)
+      const message = error instanceof Error ? error.message : ''
+
+      if (message.includes('429')) {
+        setSubmitError(
+          'Слишком много попыток отправки. Подождите пару минут и попробуйте снова.',
+        )
+        return
+      }
+
+      if (message.includes('400')) {
+        setSubmitError('Проверьте заполнение полей формы и попробуйте снова.')
+        return
+      }
+
+      if (message.toLowerCase().includes('failed to fetch')) {
+        setSubmitError(
+          'Не удалось отправить в EmailJS. Проверьте интернет и настройки EmailJS.',
+        )
+        return
+      }
+
+      if (message.includes('EmailJS config is missing')) {
+        setSubmitError(
+          'Не настроен EmailJS. Заполните VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID и VITE_EMAILJS_PUBLIC_KEY.',
+        )
+        return
+      }
+
       setSubmitError('Не удалось отправить заявку. Попробуйте еще раз.')
     }
   }
@@ -464,7 +492,7 @@ export function HomePage() {
 
       <section className="section" id="works-preview">
         <div className="section-head section-head-centered">
-          <h2 className="section-title section-title-center section-title-prominent">
+          <h2 className="section-title section-title-center section-title-prominent section-title-match-lead">
             Примеры работ
           </h2>
         </div>
@@ -585,7 +613,7 @@ export function HomePage() {
 
       <section className="section" id="tariffs">
         <div className="section-head section-head-centered">
-          <h2 className="section-title section-title-center section-title-prominent">
+          <h2 className="section-title section-title-center section-title-prominent section-title-match-lead">
             Тарифы
           </h2>
         </div>

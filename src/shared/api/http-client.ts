@@ -25,7 +25,18 @@ export async function requestJson<T>(
   })
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    let details = ''
+
+    try {
+      const payload = (await response.json()) as { message?: unknown }
+      if (typeof payload?.message === 'string' && payload.message.trim()) {
+        details = `: ${payload.message}`
+      }
+    } catch {
+      // ignore non-json error payloads
+    }
+
+    throw new Error(`Request failed: ${response.status}${details}`)
   }
 
   return (await response.json()) as T

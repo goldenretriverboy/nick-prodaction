@@ -6,7 +6,7 @@
 - Принимает отправки без лимита по количеству записей.
 - Работает по whitelist через env `ALLOWED_TELEGRAM_IDS`.
 - Отдает агрегированную сумму в API для фронтенда.
-- Принимает лиды через `POST /api/public/leads` с базовой защитой от abuse.
+- Может принимать лиды через `POST /api/public/leads` (опционально, если используете серверный сценарий).
 
 ## Переменные окружения
 
@@ -20,9 +20,9 @@
 - `ADMIN_TELEGRAM_IDS` - ID администраторов через запятую.
 - `ALLOWED_TELEGRAM_IDS` - ID пользователей с правом отправки сумм через запятую.
 - `API_SECRET` - секрет для private endpoint (опционально).
-- `EMAILJS_SERVICE_ID` - EmailJS service id (опционально, для серверной отправки лидов).
-- `EMAILJS_TEMPLATE_ID` - EmailJS template id (опционально).
-- `EMAILJS_PUBLIC_KEY` - EmailJS public key (опционально).
+- `EMAILJS_SERVICE_ID` - EmailJS service id (опционально, только для серверной отправки лидов).
+- `EMAILJS_TEMPLATE_ID` - EmailJS template id (опционально, только для серверной отправки лидов).
+- `EMAILJS_PUBLIC_KEY` - EmailJS public key (опционально, только для серверной отправки лидов).
 
 ## Команды бота
 
@@ -69,5 +69,6 @@
 5. Убедитесь, что health отвечает:
    - `https://<render-service-domain>/health`
 6. На Vercel добавьте:
-   - `VITE_API_BASE_URL=https://<render-service-domain>`
-   - `VITE_USE_LOCAL_MOCKS=false`
+   - `VITE_API_BASE_URL=https://ai-courses.onrender.com`
+   - `VITE_USE_LIVE_EARNINGS=true`
+   - `VITE_USE_LOCAL_MOCKS=true`

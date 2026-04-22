@@ -54,8 +54,3 @@ export type CreateLeadRequestDto = {
   goal?: string
   selected_tariff?: string
 }
-
-export type CreateLeadResponseDto = {
-  id: string
-  status: 'accepted'
-}

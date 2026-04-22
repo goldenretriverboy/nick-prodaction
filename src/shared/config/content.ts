@@ -1,5 +1,4 @@
 import type {
-  CreateLeadResponseDto,
   EarningsTotalResponseDto,
   TariffDto,
   WorkDetailsResponseDto,
@@ -87,7 +86,7 @@ export const mockTariffs: TariffDto[] = [
       "ПЕРВЫЕ ШАГИ В ЗАРАБОТКЕ",
     ],
     format: "",
-    price: "БЕСПЛАТНО",
+    price: "10,000 ₸",
   },
   {
     id: "pro",
@@ -106,11 +105,6 @@ export const mockTariffs: TariffDto[] = [
     recommended: true,
   },
 ];
-
-export const mockCreateLeadResponse: CreateLeadResponseDto = {
-  id: "local-mock-lead",
-  status: "accepted",
-};
 
 export const mockWorkDetailsById: Record<string, WorkDetailsResponseDto> =
   Object.fromEntries(

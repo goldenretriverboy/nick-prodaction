@@ -48,29 +48,29 @@ Telegram-бот включается только если задан `TELEGRAM_
 
 ### Интеграция earnings с backend во frontend
 
-Для подключения только блока заработка к backend (остальные данные могут оставаться на моках), добавьте в `.env.local`:
+Для подключения backend через ваш Render сервис (с сохранением моков для каталогов работ/тарифов), добавьте в `.env.local`:
 
 ```bash
-VITE_API_BASE_URL=http://localhost:8787
+VITE_API_BASE_URL=https://ai-courses.onrender.com
 VITE_USE_LIVE_EARNINGS=true
 VITE_USE_LOCAL_MOCKS=true
 ```
 
 Для Vercel:
 
-- `VITE_API_BASE_URL=https://<your-backend-domain>`
+- `VITE_API_BASE_URL=https://ai-courses.onrender.com`
 - `VITE_USE_LIVE_EARNINGS=true`
 - `VITE_USE_LOCAL_MOCKS=true`
 
 ### Лиды (форма заявки)
 
-Форма отправляет данные в backend endpoint `POST /api/public/leads`.
-Если нужна отправка уведомлений через EmailJS, задайте серверные env в `.env.server`:
+Форма отправляет данные напрямую в EmailJS (без backend-прокси).  
+Добавьте во frontend env (`.env.local` локально или Variables в Vercel):
 
 ```bash
-EMAILJS_SERVICE_ID=<service_id>
-EMAILJS_TEMPLATE_ID=<template_id>
-EMAILJS_PUBLIC_KEY=<public_key>
+VITE_EMAILJS_SERVICE_ID=<service_id>
+VITE_EMAILJS_TEMPLATE_ID=<template_id>
+VITE_EMAILJS_PUBLIC_KEY=<public_key>
 ```
 
 ### Сборка
